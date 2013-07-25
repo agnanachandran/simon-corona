@@ -1,6 +1,6 @@
 ----------------------------------------------------------------------------------
 --
--- playscreen.lua
+-- difficulty.lua
 --
 ----------------------------------------------------------------------------------
 
@@ -16,19 +16,8 @@ local scene = storyboard.newScene()
 -- 
 ---------------------------------------------------------------------------------
 
-local redSquare
-local greenSquare
-local blueSquare
-local yellowSquare
-
-local restartButton
-
-local score = 0
-local currentPos = 1
 local centerX = display.contentCenterX
 local centerY = display.contentCenterY
-local sequence = {}
-local scoreDisplay
 
 ---------------------------------------------------------------------------------
 -- BEGINNING OF YOUR IMPLEMENTATION
@@ -37,45 +26,6 @@ local scoreDisplay
 -- Called when the scene's view does not exist:
 function scene:createScene( event )
 	local group = self.view
-	scoreDisplay = display.newText( "Score: 0", 0, 0, "Helvetica", 24 )
-	
-	scoreDisplay:setTextColor(0, 0, 0)
-	scoreDisplay.alpha = 1
-	scoreDisplay.x = 0.8*display.contentWidth
-	scoreDisplay.y = 0.05*display.contentHeight
-	redSquare = display.newImage('res/red1.png')
-	blueSquare = display.newImage('res/blue2.png')
-	yellowSquare = display.newImage('res/yellow3.png')
-	greenSquare = display.newImage('res/green4.png')
-
-	restartButton = display.newImage('res/leftwards_arrow.jpg')
-	restartButton.x = 0.05*display.contentWidth
-	restartButton.y = 0.9*display.contentHeight
-	restartButton:scale(0.1,0.1)
-	redSquare:scale(0.1,0.1)
-	greenSquare:scale(0.1,0.1)
-	blueSquare:scale(0.1,0.1)
-	yellowSquare:scale(0.1,0.1)
-
-	local xfirst = centerX - 0.1*display.contentWidth
-	local xsecond = centerX + 0.1*display.contentWidth
-	local yfirst = centerY - 0.1*display.contentHeight
-	local ysecond = centerY + 0.1*display.contentHeight
-	redSquare.x = xfirst
-	redSquare.y = yfirst
-	greenSquare.x = xfirst
-	greenSquare.y = ysecond
-	blueSquare.x = xsecond
-	blueSquare.y = yfirst
-	yellowSquare.x = xsecond
-	yellowSquare.y = ysecond
-
-
-	group:insert(redSquare)
-	group:insert(greenSquare)
-	group:insert(blueSquare)
-	group:insert(yellowSquare)
-	group:insert(scoreDisplay)
 
 	-----------------------------------------------------------------------------
 		
@@ -89,63 +39,13 @@ end
 
 -- Called immediately after scene has moved onscreen:
 function scene:enterScene( event )
-	local tab = { redSquare, greenSquare, blueSquare, yellowSquare }
-	local numPanels = #tab -- could just change to 4
-	local isRight
-	local alive = true
 
-	local function flashPanel( panel )
-		panel = display.newImage('res/red1.png')
-		panel:scale(0.1,0.1)
-		panel.x = display.contentWidth * 0.5
-		panel.y = display.contentHeight * 0.5
-
-	end
-	local function playGame()
-		table.insert( sequence, math.random( numPanels ) )
-		for i, panel in ipairs( sequence ) do
-  			flashPanel(panel)
-		end
-
-	end
 --------------------------------------------------------------
 		
 	--	INSERT code here (e.g. start timers, load audio, start listeners, etc.)
 	
 	-----------------------------------------------------------------------------
-	local function playGameOverSound()
-	end
 
-	local function updateScore( upScore)
-		if upScore == true then -- TODO: can we just say if upScore??
-			score = score + 1
-		else
-			score = score - 1
-		end
-		scoreDisplay.text = "Score: " .. score
-	end
-
-	local function updateGame( event )
-		local obj = event.target
-	
-		if tab[sequence[currentPos]] == obj then
-			updateScore( true )
-		else
-			updateScore( false )
-			playGameOverSound()
-		end
-
-		currentPos = currentPos + 1
-		playGame()
-		return true
-	end
-	--can we change to iterate over all elements in 'tab', and add this eventlistener?
-	redSquare:addEventListener('tap', updateGame)
-	greenSquare:addEventListener('tap', updateGame)
-	yellowSquare:addEventListener('tap', updateGame)
-	blueSquare:addEventListener('tap', updateGame)
-
-	playGame()
 end
 
 -- Called when scene is about to move offscreen:

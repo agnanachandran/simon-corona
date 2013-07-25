@@ -10,7 +10,7 @@ display.setStatusBar(display.HiddenStatusBar)
 local score = 0
 local centerX = display.contentCenterX
 local centerY = display.contentCenterY
-local background = tileBG('bg.png', 27, 15)
+local background = tileBG('res/bg.png', 27, 15)
 local addMenuScreen
 local menuScreen
 local showStart
@@ -95,12 +95,12 @@ end
 -- Called immediately after scene has moved onscreen:
 function scene:enterScene( event )
 	function x() 
-		local options =
+		local effects =
 		{
 		effect = "slideUp",
-		time = 800,
+		time = 500,
 		}
-		storyboard.gotoScene( "playscreen", options)
+		storyboard.gotoScene( "playscreen", effects)
 	end
 	
 	--	INSERT code here (e.g. start timers, load audio, start listeners, etc.)
