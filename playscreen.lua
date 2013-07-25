@@ -48,14 +48,15 @@ function scene:createScene( event )
 	yellowSquare = display.newImage('res/yellow3.png')
 	greenSquare = display.newImage('res/green4.png')
 
-	restartButton = display.newImage('res/leftwards_arrow.jpg')
+	restartButton = display.newImage('res/back.jpg')	
 	restartButton.x = 0.05*display.contentWidth
 	restartButton.y = 0.9*display.contentHeight
-	restartButton:scale(0.1,0.1)
-	redSquare:scale(0.1,0.1)
-	greenSquare:scale(0.1,0.1)
-	blueSquare:scale(0.1,0.1)
-	yellowSquare:scale(0.1,0.1)
+	local scaleSize = 0.2
+	restartButton:scale(scaleSize,scaleSize)
+	redSquare:scale(scaleSize,scaleSize)
+	greenSquare:scale(scaleSize,scaleSize)
+	blueSquare:scale(scaleSize,scaleSize)
+	yellowSquare:scale(scaleSize,scaleSize)
 
 	local xfirst = centerX - 0.1*display.contentWidth
 	local xsecond = centerX + 0.1*display.contentWidth
@@ -89,34 +90,36 @@ end
 
 -- Called immediately after scene has moved onscreen:
 function scene:enterScene( event )
-	local tab = { redSquare, greenSquare, blueSquare, yellowSquare }
-	local numPanels = #tab -- could just change to 4
-	local isRight
-	local alive = true
-
-	local function flashPanel( panel )
-		panel = display.newImage('res/red1.png')
-		panel:scale(0.1,0.1)
-		panel.x = display.contentWidth * 0.5
-		panel.y = display.contentHeight * 0.5
-
-	end
-	local function playGame()
-		table.insert( sequence, math.random( numPanels ) )
-		for i, panel in ipairs( sequence ) do
-  			flashPanel(panel)
-		end
-
-	end
---------------------------------------------------------------
+	--------------------------------------------------------------
 		
 	--	INSERT code here (e.g. start timers, load audio, start listeners, etc.)
 	
 	-----------------------------------------------------------------------------
+
+	local tab = { redSquare, greenSquare, blueSquare, yellowSquare }
+	local numPanels = #tab -- could just change to 4
+	local isRight
+	local alive = true
+	local count = 0
+	local function flashPanel()
+		if (count > 0) then
+			transition.to (tab[sequence[count]], {time=1000, alpha=0.1})
+			transition.to (tab[sequence[count]], {time=1000, delay=1500, alpha=1.0})
+			count = count - 1
+		end 
+	end
+
+	local function playGame()
+		table.insert( sequence, math.random( numPanels ) )
+		count = #sequence
+		timer.performWithDelay( 2500, flashPanel, #sequence)
+	end
+
 	local function playGameOverSound()
 	end
 
-	local function updateScore( upScore)
+	-- true = correct, false = incorrect
+	local function updateScore( upScore )
 		if upScore == true then -- TODO: can we just say if upScore??
 			score = score + 1
 		else
@@ -135,17 +138,29 @@ function scene:enterScene( event )
 			playGameOverSound()
 		end
 
+		if currentPos == #sequence then
+			playGame()
+		end
+
 		currentPos = currentPos + 1
-		playGame()
 		return true
 	end
 	--can we change to iterate over all elements in 'tab', and add this eventlistener?
+
+	local function goBack( event )
+		storyboard.gotoScene( "homescreen", "slideLeft", 750 )
+	end
+
+	-- listeners
 	redSquare:addEventListener('tap', updateGame)
 	greenSquare:addEventListener('tap', updateGame)
 	yellowSquare:addEventListener('tap', updateGame)
 	blueSquare:addEventListener('tap', updateGame)
+	restartButton:addEventListener('tap', goBack)
 
+	-- start game loop
 	playGame()
+
 end
 
 -- Called when scene is about to move offscreen:
