@@ -5,6 +5,7 @@
 ----------------------------------------------------------------------------------
 
 local storyboard = require( "storyboard" )
+local widget = require( "widget" )
 local scene = storyboard.newScene()
 
 ----------------------------------------------------------------------------------
@@ -15,6 +16,7 @@ local scene = storyboard.newScene()
 --	unless storyboard.removeScene() is called.
 -- 
 ---------------------------------------------------------------------------------
+local wheel
 
 local redSquare
 local greenSquare
@@ -37,11 +39,20 @@ local scoreDisplay
 -- Called when the scene's view does not exist:
 function scene:createScene( event )
 	local group = self.view
+
+	local scaleSize = 0.3
+
+	-- Background wheel for 4 coloured panels
+	wheel = display.newImage('res/wheel.png')
+	wheel.x = 0.5*display.contentWidth
+	wheel.y = 0.5*display.contentHeight
+	wheel:scale(scaleSize, scaleSize)
+
 	scoreDisplay = display.newText( "Score: 0", 0, 0, "Helvetica", 24 )
 	
-	scoreDisplay:setTextColor(0, 0, 0)
+	scoreDisplay:setTextColor(0, 0, 0) -- black
 	scoreDisplay.alpha = 1
-	scoreDisplay.x = 0.8*display.contentWidth
+	scoreDisplay.x = 0.7*display.contentWidth
 	scoreDisplay.y = 0.05*display.contentHeight
 	redSquare = display.newImage('res/red1.png')
 	blueSquare = display.newImage('res/blue2.png')
@@ -51,17 +62,25 @@ function scene:createScene( event )
 	restartButton = display.newImage('res/back.jpg')	
 	restartButton.x = 0.05*display.contentWidth
 	restartButton.y = 0.9*display.contentHeight
-	local scaleSize = 0.2
+
 	restartButton:scale(scaleSize,scaleSize)
+
 	redSquare:scale(scaleSize,scaleSize)
 	greenSquare:scale(scaleSize,scaleSize)
 	blueSquare:scale(scaleSize,scaleSize)
 	yellowSquare:scale(scaleSize,scaleSize)
 
-	local xfirst = centerX - 0.1*display.contentWidth
-	local xsecond = centerX + 0.1*display.contentWidth
-	local yfirst = centerY - 0.1*display.contentHeight
-	local ysecond = centerY + 0.1*display.contentHeight
+	local initialAlpha = 1
+	redSquare.alpha = initialAlpha
+	blueSquare.alpha = initialAlpha
+	greenSquare.alpha = initialAlpha
+	yellowSquare.alpha = initialAlpha
+
+	local spaceApart = 0.22
+	local xfirst = centerX - spaceApart*display.contentWidth
+	local xsecond = centerX + spaceApart*display.contentWidth
+	local yfirst = centerY - 0.15*display.contentHeight
+	local ysecond = centerY + 0.15*display.contentHeight
 	redSquare.x = xfirst
 	redSquare.y = yfirst
 	greenSquare.x = xfirst
@@ -71,11 +90,12 @@ function scene:createScene( event )
 	yellowSquare.x = xsecond
 	yellowSquare.y = ysecond
 
-
+	group:insert(wheel)
 	group:insert(redSquare)
 	group:insert(greenSquare)
 	group:insert(blueSquare)
 	group:insert(yellowSquare)
+	group:insert(restartButton)
 	group:insert(scoreDisplay)
 
 	-----------------------------------------------------------------------------
@@ -101,18 +121,19 @@ function scene:enterScene( event )
 	local isRight
 	local alive = true
 	local count = 0
+
 	local function flashPanel()
-		if (count > 0) then
-			transition.to (tab[sequence[count]], {time=1000, alpha=0.1})
-			transition.to (tab[sequence[count]], {time=1000, delay=1500, alpha=1.0})
-			count = count - 1
+		if (count <= #sequence) then
+			transition.to (tab[sequence[count]], {time=700, alpha=0.4})
+			transition.to (tab[sequence[count]], {time=700, delay=700, alpha=1})
+			count = count + 1
 		end 
 	end
 
 	local function playGame()
 		table.insert( sequence, math.random( numPanels ) )
-		count = #sequence
-		timer.performWithDelay( 2500, flashPanel, #sequence)
+		count = 1
+		timer.performWithDelay( 1400, flashPanel, #sequence)
 	end
 
 	local function playGameOverSound()
@@ -121,9 +142,9 @@ function scene:enterScene( event )
 	-- true = correct, false = incorrect
 	local function updateScore( upScore )
 		if upScore == true then -- TODO: can we just say if upScore??
-			score = score + 1
+			score = score + 100
 		else
-			score = score - 1
+			score = score - 100
 		end
 		scoreDisplay.text = "Score: " .. score
 	end
@@ -139,7 +160,9 @@ function scene:enterScene( event )
 		end
 
 		if currentPos == #sequence then
+			currentPos = 1
 			playGame()
+			return true
 		end
 
 		currentPos = currentPos + 1
@@ -148,7 +171,13 @@ function scene:enterScene( event )
 	--can we change to iterate over all elements in 'tab', and add this eventlistener?
 
 	local function goBack( event )
-		storyboard.gotoScene( "homescreen", "slideLeft", 750 )
+		local effects =
+		{
+		effect = "slideRight",
+		time = 750,
+		}
+		storyboard.gotoScene( "homescreen", effects )
+		-- storyboard.removeScene( "playscreen" )
 	end
 
 	-- listeners
@@ -166,7 +195,7 @@ end
 -- Called when scene is about to move offscreen:
 function scene:exitScene( event )
 	local group = self.view
-	
+	-- display.remove(group)
 	-----------------------------------------------------------------------------
 	
 	--	INSERT code here (e.g. stop timers, remove listeners, unload sounds, etc.)
