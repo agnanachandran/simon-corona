@@ -21,7 +21,7 @@ local showCredits
 local titleText
 local startGameButton
 local instructionsText
-local startGame
+local showDifficulty
 local showInstructionsText
 local showSettingsText
 local showCreditsText
@@ -40,6 +40,45 @@ function scene:createScene( event )
     local transitionTime = 300
 
     local group = self.view
+
+    local scaleSize = 0.15
+
+    -- Background wheel for 4 coloured panels
+    wheel = display.newImage('res/wheel.png')
+    wheel.x = 0.5*display.contentWidth
+    wheel.y = 0.2*display.contentHeight
+    wheel:scale(scaleSize, scaleSize)
+
+    redSquare = display.newImage('res/red1.png')
+    blueSquare = display.newImage('res/blue2.png')
+    yellowSquare = display.newImage('res/yellow3.png')
+    greenSquare = display.newImage('res/green4.png')
+
+    redSquare:scale(scaleSize,scaleSize)
+    greenSquare:scale(scaleSize,scaleSize)
+    blueSquare:scale(scaleSize,scaleSize)
+    yellowSquare:scale(scaleSize,scaleSize)
+
+    local spaceApart = 0.12
+    upCenterY = 0.3*centerY
+    local xfirst = centerX - spaceApart*display.contentWidth
+    local xsecond = centerX + spaceApart*display.contentWidth
+    local yfirst = upCenterY - 0.025*display.contentHeight
+    local ysecond = upCenterY + 0.115*display.contentHeight
+    redSquare.x = xfirst
+    redSquare.y = yfirst
+    greenSquare.x = xfirst
+    greenSquare.y = ysecond
+    blueSquare.x = xsecond
+    blueSquare.y = yfirst
+    yellowSquare.x = xsecond
+    yellowSquare.y = ysecond
+
+    group:insert(wheel)
+    group:insert(blueSquare)
+    group:insert(redSquare)
+    group:insert(greenSquare)
+    group:insert(yellowSquare)
     function addMenuScreen()
         titleText = display.newText( "Simon", 0, 0, "Helvetica", 30 )
         titleText.alpha = 0
@@ -57,7 +96,7 @@ function scene:createScene( event )
             local phase = event.phase
             local target = event.target
             if ( "ended" == phase ) then
-                startGame()
+                showDifficulty()
             end
             return true
         end
@@ -173,13 +212,13 @@ end
 -- Called immediately after scene has moved onscreen:
 function scene:enterScene( event )
     storyboard.removeScene("playscreen")
-    function startGame() 
-        local effects =
+    function showDifficulty() 
+        local options =
         {
             effect = "slideLeft",
             time = 300,
         }
-        storyboard.gotoScene( "playscreen", effects)
+        storyboard.gotoScene( "difficulty", options)
     end
 
     function showInstructionsText()

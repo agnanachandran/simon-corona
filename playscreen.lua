@@ -39,7 +39,6 @@ local scoreDisplay
 -- Called when the scene's view does not exist:
 function scene:createScene( event )
 	local group = self.view
-
 	local scaleSize = 0.3
 
 	-- Background wheel for 4 coloured panels
@@ -59,9 +58,9 @@ function scene:createScene( event )
 	yellowSquare = display.newImage('res/yellow3.png')
 	greenSquare = display.newImage('res/green4.png')
 
-	restartButton = display.newImage('res/back.jpg')	
-	restartButton.x = 0.05*display.contentWidth
-	restartButton.y = 0.9*display.contentHeight
+	restartButton = display.newImage('res/restart.jpg')	
+	restartButton.x = 0.1*display.contentWidth
+	restartButton.y = 0.1*display.contentHeight
 
 	restartButton:scale(scaleSize,scaleSize)
 
@@ -98,6 +97,7 @@ function scene:createScene( event )
 	group:insert(restartButton)
 	group:insert(scoreDisplay)
 
+	local difficulty = event.params.difficulty
 	-----------------------------------------------------------------------------
 		
 	--	CREATE display objects and add them to 'group' here.
@@ -115,6 +115,8 @@ function scene:enterScene( event )
 	--	INSERT code here (e.g. start timers, load audio, start listeners, etc.)
 	
 	-----------------------------------------------------------------------------
+
+	local difficulty = event.params.difficulty
 
 	local tab = { redSquare, greenSquare, blueSquare, yellowSquare }
 	local numPanels = #tab -- could just change to 4
@@ -203,7 +205,6 @@ function scene:exitScene( event )
 	-----------------------------------------------------------------------------
 	
 end
-
 
 -- Called prior to the removal of scene's "view" (display group)
 function scene:destroyScene( event )
