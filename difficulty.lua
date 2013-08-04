@@ -6,7 +6,27 @@
 
 local storyboard = require( "storyboard" )
 local widget = require( "widget" )
+local device = require( "device" )
 local scene = storyboard.newScene()
+
+local stdFontSize = 22
+
+local font = {}
+font.normal = "Helvetica"
+font.bold = "Helvetica-Bold"
+font.italic = "Helvetica-Oblique"
+
+if ( device.isAndroid ) then
+   font.normal = "DroidSans"
+   font.bold = "DroidSans-Bold"
+   if ( device.isNook ) then
+      font.normal = "Arial"
+      font.bold = "Arial Bold"
+   elseif ( device.isKindleFire ) then
+      font.normal = "arial"
+      font.bold = "arial bold"
+   end
+end
 
 ----------------------------------------------------------------------------------
 -- 
@@ -27,6 +47,7 @@ local onEasyTapEnd
 local onMediumTapEnd
 local onHardTapEnd
 local onInsaneTapEnd
+
 ----------------------------------------------------------------------------------
 -- BEGINNING OF YOUR IMPLEMENTATION
 ---------------------------------------------------------------------------------
@@ -74,8 +95,11 @@ easyButton = widget.newButton
 	top = 250,
 	label = "Easy",
 	labelAlign = "center",
-	fontSize = 30,
-	labelColor = { default = {59, 89, 152}, over = {69, 99, 162} },
+    defaultFile = 'res/blue_button.png',
+    overFile = 'res/blue_button_over.png',
+	font = font.normal,
+	fontSize = stdFontSize,
+    labelColor = { default = {0, 0, 0}, over = {255, 255, 255} },
 	onEvent = onEasyTap
 }
 
@@ -89,8 +113,11 @@ mediumButton = widget.newButton
 	top = 300,
 	label = "Medium",
 	labelAlign = "center",
-	fontSize = 30,
-	labelColor = { default = {59, 89, 152}, over = {69, 99, 162} },
+    defaultFile = 'res/red_button.png',
+    overFile = 'res/red_button_over.png',
+	font = font.normal,
+	fontSize = stdFontSize,
+    labelColor = { default = {0, 0, 0}, over = {255, 255, 255} },
 	onEvent = onEasyTap
 }
 
@@ -104,8 +131,11 @@ hardButton = widget.newButton
 	top = 350,
 	label = "Hard",
 	labelAlign = "center",
-	fontSize = 30,
-	labelColor = { default = {59, 89, 152}, over = {69, 99, 162} },
+    defaultFile = 'res/green_button.png',
+    overFile = 'res/green_button_over.png',
+	font = font.normal,
+	fontSize = stdFontSize,
+    labelColor = { default = {0, 0, 0}, over = {255, 255, 255} },
 	onEvent = onEasyTap
 }
 
@@ -119,8 +149,11 @@ insaneButton = widget.newButton
 	top = 400,
 	label = "Insane",
 	labelAlign = "center",
-	fontSize = 30,
-	labelColor = { default = {59, 89, 152}, over = {69, 99, 162} },
+    defaultFile = 'res/yellow_button.png',
+    overFile = 'res/yellow_button_over.png',
+	font = font.normal,
+	fontSize = stdFontSize,
+    labelColor = { default = {0, 0, 0}, over = {255, 255, 255} },
 	onEvent = onEasyTap
 }
 

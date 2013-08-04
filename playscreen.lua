@@ -6,7 +6,25 @@
 
 local storyboard = require( "storyboard" )
 local widget = require( "widget" )
+local device = require( "device" )
 local scene = storyboard.newScene()
+
+local font = {}
+font.normal = "Helvetica"
+font.bold = "Helvetica-Bold"
+font.italic = "Helvetica-Oblique"
+
+if ( device.isAndroid ) then
+   font.normal = "DroidSans"
+   font.bold = "DroidSans-Bold"
+   if ( device.isNook ) then
+      font.normal = "Arial"
+      font.bold = "Arial Bold"
+   elseif ( device.isKindleFire ) then
+      font.normal = "arial"
+      font.bold = "arial bold"
+   end
+end
 
 ----------------------------------------------------------------------------------
 -- 
@@ -47,18 +65,26 @@ function scene:createScene( event )
 	wheel.y = 0.5*display.contentHeight
 	wheel:scale(scaleSize, scaleSize)
 
-	scoreDisplay = display.newText( "Score: 0", 0, 0, "Helvetica", 24 )
-	
-	scoreDisplay:setTextColor(0, 0, 0) -- black
+	roundDisplay = display.newText( "Round: ", 0, 0, "Let's go Digital", 25)
+	roundDisplay:setTextColor(255, 255, 255) -- white
+	roundDisplay.alpha = 1
+	roundDisplay.x = 0.9*display.contentWidth
+	roundDisplay.y = 0.05*display.contentHeight
+
+	scoreDisplay = display.newText( "Score:", 0, 0, "Let's go Digital", 25 )
+	scoreDisplay:setTextColor(255, 255, 255) -- white
 	scoreDisplay.alpha = 1
-	scoreDisplay.x = 0.7*display.contentWidth
-	scoreDisplay.y = 0.05*display.contentHeight
+	scoreDisplay.x = centerX
+	scoreDisplay.y = 0.45*display.contentHeight
+
+
+
 	redSquare = display.newImage('res/red1.png')
 	blueSquare = display.newImage('res/blue2.png')
 	yellowSquare = display.newImage('res/yellow3.png')
 	greenSquare = display.newImage('res/green4.png')
 
-	restartButton = display.newImage('res/restart.jpg')	
+	restartButton = display.newImage('res/restart.png')	
 	restartButton.x = 0.1*display.contentWidth
 	restartButton.y = 0.1*display.contentHeight
 
@@ -75,11 +101,12 @@ function scene:createScene( event )
 	greenSquare.alpha = initialAlpha
 	yellowSquare.alpha = initialAlpha
 
-	local spaceApart = 0.22
-	local xfirst = centerX - spaceApart*display.contentWidth
-	local xsecond = centerX + spaceApart*display.contentWidth
-	local yfirst = centerY - 0.15*display.contentHeight
-	local ysecond = centerY + 0.15*display.contentHeight
+	local xSpace = 0.22
+	local ySpace = 0.147
+	local xfirst = centerX - xSpace*display.contentWidth
+	local xsecond = centerX + xSpace*display.contentWidth
+	local yfirst = centerY - ySpace*display.contentHeight
+	local ysecond = centerY + ySpace*display.contentHeight
 	redSquare.x = xfirst
 	redSquare.y = yfirst
 	greenSquare.x = xfirst

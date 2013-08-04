@@ -1,5 +1,7 @@
 local storyboard = require( "storyboard" )
 local widget = require( "widget" )
+local device = require( "device" )
+local physics = require( "physics")
 local scene = storyboard.newScene()
 
 -- imports
@@ -8,7 +10,7 @@ require( "tilebg" )
 -- Hide status bar
 display.setStatusBar(display.HiddenStatusBar)
 
-local score = 0
+local buttonScale = 0.5
 local centerX = display.contentCenterX
 local centerY = display.contentCenterY
 local background = tileBG('res/bg.png', 27, 15)
@@ -25,6 +27,28 @@ local showDifficulty
 local showInstructionsText
 local showSettingsText
 local showCreditsText
+local speakerButton
+local musicButton
+
+local stdFontSize = 22
+-- Font defaults - Add to every file that uses fonts.
+local font = {}
+font.normal = "Helvetica"
+font.bold = "Helvetica-Bold"
+font.italic = "Helvetica-Oblique"
+
+if ( device.isAndroid ) then
+   font.normal = "DroidSans"
+   font.bold = "DroidSans-Bold"
+   if ( device.isNook ) then
+      font.normal = "Arial"
+      font.bold = "Arial Bold"
+   elseif ( device.isKindleFire ) then
+      font.normal = "arial"
+      font.bold = "arial bold"
+   end
+end
+
 --  Code outside of listener functions (below) will only be executed once,
 --  unless storyboard.removeScene() is called.
 
@@ -36,7 +60,7 @@ function scene:createScene( event )
     --  x.x = centerX
     --  x:setTextColor(0, 0, 0)
     -- end
-
+    physics.start()
     local transitionTime = 300
 
     local group = self.view
@@ -59,12 +83,12 @@ function scene:createScene( event )
     blueSquare:scale(scaleSize,scaleSize)
     yellowSquare:scale(scaleSize,scaleSize)
 
-    local spaceApart = 0.12
-    upCenterY = 0.3*centerY
+    local spaceApart = 0.11
+    local upCenterY = 0.3*centerY
     local xfirst = centerX - spaceApart*display.contentWidth
     local xsecond = centerX + spaceApart*display.contentWidth
     local yfirst = upCenterY - 0.025*display.contentHeight
-    local ysecond = upCenterY + 0.115*display.contentHeight
+    local ysecond = upCenterY + 0.122*display.contentHeight
     redSquare.x = xfirst
     redSquare.y = yfirst
     greenSquare.x = xfirst
@@ -79,8 +103,21 @@ function scene:createScene( event )
     group:insert(redSquare)
     group:insert(greenSquare)
     group:insert(yellowSquare)
+
+    speakerButton = display.newImage('res/speaker_on.png')
+    speakerButton:scale(scaleSize/1.9, scaleSize/1.9)
+    speakerButton.x = 0.1*display.contentWidth
+    speakerButton.y = 0.92*display.contentHeight
+
+    musicButton = display.newImage('res/speaker_on.png')
+    musicButton:scale(scaleSize/2, scaleSize/2)
+    musicButton.x = 0.9*display.contentWidth
+    musicButton.y = 0.92*display.contentHeight
+    group:insert(speakerButton)
+    group:insert(musicButton)
+
     function addMenuScreen()
-        titleText = display.newText( "Simon", 0, 0, "Helvetica", 30 )
+        titleText = display.newText( "SIMON", 0, 0, "Let's go Digital", 30 )
         titleText.alpha = 0
         titleText.x = centerX
         titleText.y = 200
@@ -103,11 +140,14 @@ function scene:createScene( event )
 
         startGameButton = widget.newButton
         {
-            top = 250,
+            top = 0.55 * display.contentHeight,
             label = "Play",
             labelAlign = "center",
-            fontSize = 30,
-            labelColor = { default = {59, 89, 152}, over = {69, 99, 162} },
+            defaultFile = 'res/blue_button.png',
+            overFile = 'res/blue_button_over.png',
+            font = font.normal,
+            fontSize = stdFontSize,
+            labelColor = { default = {0, 0, 0}, over = {255, 255, 255} },
             onEvent = onStartTap
         }
 
@@ -132,11 +172,13 @@ function scene:createScene( event )
 
         instructionsButton = widget.newButton
         {
-            top = 310,
+            top = 0.65*display.contentHeight,
             label = "Instructions",
             labelAlign = "center",
-            fontSize = 30,
-            labelColor = { default = {59, 89, 152}, over = {69, 99, 162} },
+            defaultFile = 'res/red_button.png',
+            overFile = 'res/red_button_over.png',
+            fontSize = stdFontSize,
+            labelColor = { default = {0, 0, 0}, over = {255, 255, 255} },
             onEvent = onInstructionsTap
         }
         instructionsButton.baseLabel = "Instructions"
@@ -160,11 +202,13 @@ function scene:createScene( event )
 
         settingsButton = widget.newButton
         {
-            top = 370,
+            top = 0.75*display.contentHeight,
             label = "Settings",
             labelAlign = "center",
-            fontSize = 30,
-            labelColor = { default = {59, 89, 152}, over = {69, 99, 162} },
+            defaultFile = 'res/green_button.png',
+            overFile = 'res/green_button_over.png',
+            fontSize = stdFontSize,
+            labelColor = { default = {0, 0, 0}, over = {255, 255, 255} },
             onEvent = onSettingsTap
         }
         settingsButton.baseLabel = "Settings"
@@ -188,11 +232,13 @@ function scene:createScene( event )
 
         creditsButton = widget.newButton
         {
-            top = 430,
+            top = 0.85*display.contentHeight,
             label = "Credits",
             labelAlign = "center",
-            fontSize = 30,
-            labelColor = { default = {59, 89, 152}, over = {69, 99, 162} },
+            defaultFile = 'res/yellow_button.png',
+            overFile = 'res/yellow_button_over.png',
+            fontSize = stdFontSize,
+            labelColor = { default = {0, 0, 0}, over = {255, 255, 255} },
             onEvent = onSettingsTap
         }
         creditsButton.baseLabel = "Credits"
