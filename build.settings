@@ -14,7 +14,9 @@ settings = {
 			UIPrerenderedIcon = true, -- set to false for "shine" overlay
 			--UIApplicationExitsOnSuspend = true, -- uncomment to quit app on suspend
 			UIAppFonts = {
-                            "Let's go Digital.ttf"
+                            "Let's go Digital.ttf",
+                            "Digitrix Regular.ttf",
+                            "Glametrix.ttf"
             }
             --[[
             -- iOS app URL schemes:

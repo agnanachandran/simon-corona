@@ -131,7 +131,7 @@ function scene:createScene( event )
     group:insert(yellowSquare)
 
     function addMenuScreen()
-        titleText = display.newText( "SIMON", 0, 0, "Let's go Digital", 30 )
+        titleText = display.newText( "SIMON", 0, 0, "Glametrix", 36 )
         titleText.alpha = 0
         titleText.x = centerX
         titleText.y = 200
@@ -284,7 +284,7 @@ function scene:enterScene( event )
     function showInstructionsText()
         local effects =
         {
-        effect = "slideDown",
+        effect = "fade",
         time = 300,
         }
         storyboard.gotoScene( "instructions", effects)
@@ -293,7 +293,7 @@ function scene:enterScene( event )
     function showSettingsText()
         local effects =
         {
-        effect = "slideDown",
+        effect = "fade",
         time = 300,
         }
         storyboard.gotoScene( "settings", effects)
