@@ -65,6 +65,19 @@ function scene:createScene( event )
 
     local group = self.view
 
+    -- GLOBAL SPEAKER
+    speakerButton = display.newImage('res/speaker_on.png')
+    speakerButton:scale(0.08, 0.08)
+    speakerButton.x = 0.1*display.contentWidth
+    speakerButton.y = 0.92*display.contentHeight
+
+    musicButton = display.newImage('res/music_on.png')
+    musicButton:scale(0.1, 0.1)
+    musicButton.x = 0.9*display.contentWidth
+    musicButton.y = 0.92*display.contentHeight
+    group:insert(speakerButton)
+    group:insert(musicButton)
+    -- GLOBAL SPEAKER
     local scaleSize = 0.15
 
     -- Background wheel for 4 coloured panels
@@ -98,23 +111,24 @@ function scene:createScene( event )
     yellowSquare.x = xsecond
     yellowSquare.y = ysecond
 
+    wheel.alpha=0
+    redSquare.alpha = 0
+    greenSquare.alpha = 0
+    blueSquare.alpha = 0
+    yellowSquare.alpha = 0
+
+    local timeTillOpaque = 1000
+    transition.to(wheel, {time=timeOpaque, alpha=1})
+    transition.to(redSquare, { time=timeOpaque, alpha=1})
+    transition.to(greenSquare, { time=timeOpaque, alpha=1})
+    transition.to(blueSquare, { time=timeOpaque, alpha=1})
+    transition.to(yellowSquare, { time=timeOpaque, alpha=1})
+
     group:insert(wheel)
     group:insert(blueSquare)
     group:insert(redSquare)
     group:insert(greenSquare)
     group:insert(yellowSquare)
-
-    speakerButton = display.newImage('res/speaker_on.png')
-    speakerButton:scale(scaleSize/1.9, scaleSize/1.9)
-    speakerButton.x = 0.1*display.contentWidth
-    speakerButton.y = 0.92*display.contentHeight
-
-    musicButton = display.newImage('res/speaker_on.png')
-    musicButton:scale(scaleSize/2, scaleSize/2)
-    musicButton.x = 0.9*display.contentWidth
-    musicButton.y = 0.92*display.contentHeight
-    group:insert(speakerButton)
-    group:insert(musicButton)
 
     function addMenuScreen()
         titleText = display.newText( "SIMON", 0, 0, "Let's go Digital", 30 )
@@ -147,7 +161,7 @@ function scene:createScene( event )
             overFile = 'res/blue_button_over.png',
             font = font.normal,
             fontSize = stdFontSize,
-            labelColor = { default = {0, 0, 0}, over = {255, 255, 255} },
+            labelColor = { default = {255, 255, 255}, over = {245, 245, 245} },
             onEvent = onStartTap
         }
 
@@ -178,7 +192,7 @@ function scene:createScene( event )
             defaultFile = 'res/red_button.png',
             overFile = 'res/red_button_over.png',
             fontSize = stdFontSize,
-            labelColor = { default = {0, 0, 0}, over = {255, 255, 255} },
+            labelColor = { default = {255, 255, 255}, over = {245, 245, 245} },
             onEvent = onInstructionsTap
         }
         instructionsButton.baseLabel = "Instructions"
@@ -208,7 +222,7 @@ function scene:createScene( event )
             defaultFile = 'res/green_button.png',
             overFile = 'res/green_button_over.png',
             fontSize = stdFontSize,
-            labelColor = { default = {0, 0, 0}, over = {255, 255, 255} },
+            labelColor = { default = {255, 255, 255}, over = {245, 245, 245} },
             onEvent = onSettingsTap
         }
         settingsButton.baseLabel = "Settings"
@@ -238,7 +252,7 @@ function scene:createScene( event )
             defaultFile = 'res/yellow_button.png',
             overFile = 'res/yellow_button_over.png',
             fontSize = stdFontSize,
-            labelColor = { default = {0, 0, 0}, over = {255, 255, 255} },
+            labelColor = { default = {255, 255, 255}, over = {245, 245, 245} },
             onEvent = onSettingsTap
         }
         creditsButton.baseLabel = "Credits"
@@ -268,30 +282,30 @@ function scene:enterScene( event )
     end
 
     function showInstructionsText()
-        -- local effects =
-        -- {
-        -- effect = "slideLeft",
-        -- time = 300,
-        -- }
-        -- storyboard.gotoScene( "playscreen", effects)
+        local effects =
+        {
+        effect = "slideDown",
+        time = 300,
+        }
+        storyboard.gotoScene( "instructions", effects)
     end
 
     function showSettingsText()
-        -- local effects =
-        -- {
-        -- effect = "slideLeft",
-        -- time = 300,
-        -- }
-        -- storyboard.gotoScene( "playscreen", effects)
+        local effects =
+        {
+        effect = "slideDown",
+        time = 300,
+        }
+        storyboard.gotoScene( "settings", effects)
     end
 
     function showCreditsText()
-        -- local effects =
-        -- {
-        -- effect = "slideLeft",
-        -- time = 300,
-        -- }
-        -- storyboard.gotoScene( "playscreen", effects)
+        local effects =
+        {
+        effect = "slideDown",
+        time = 300,
+        }
+        storyboard.gotoScene( "credits", effects)
     end
 
     --  INSERT code here (e.g. start timers, load audio, start listeners, etc.)

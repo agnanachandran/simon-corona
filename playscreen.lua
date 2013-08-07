@@ -43,11 +43,14 @@ local yellowSquare
 
 local restartButton
 
+local difficulty
+local timeDelay
 local score = 0
 local currentPos = 1
 local centerX = display.contentCenterX
 local centerY = display.contentCenterY
 local sequence = {}
+local scoreText
 local scoreDisplay
 
 ---------------------------------------------------------------------------------
@@ -57,6 +60,30 @@ local scoreDisplay
 -- Called when the scene's view does not exist:
 function scene:createScene( event )
 	local group = self.view
+
+	-- GLOBAL SPEAKER
+    speakerButton = display.newImage('res/speaker_on.png')
+    speakerButton:scale(0.08, 0.08)
+    speakerButton.x = 0.1*display.contentWidth
+    speakerButton.y = 0.92*display.contentHeight
+
+    musicButton = display.newImage('res/music_on.png')
+    musicButton:scale(0.1, 0.1)
+    musicButton.x = 0.9*display.contentWidth
+    musicButton.y = 0.92*display.contentHeight
+    group:insert(speakerButton)
+    group:insert(musicButton)
+	-- GLOBAL SPEAKER
+
+	local difficulty = event.params.difficulty
+	if difficulty == "easy" then
+		timeDelay = 2000
+	elseif difficulty == "medium" then
+		timeDelay = 1500
+	-- Hard and insane have the same time delay.
+	else
+		timeDelay = 500
+	end
 	local scaleSize = 0.3
 
 	-- Background wheel for 4 coloured panels
@@ -65,19 +92,23 @@ function scene:createScene( event )
 	wheel.y = 0.5*display.contentHeight
 	wheel:scale(scaleSize, scaleSize)
 
-	roundDisplay = display.newText( "Round: ", 0, 0, "Let's go Digital", 25)
-	roundDisplay:setTextColor(255, 255, 255) -- white
+	roundDisplay = display.newText( "Round:   ", 0, 0, "Let's go Digital", 25)
+	roundDisplay:setTextColor(0, 0, 0) -- white
 	roundDisplay.alpha = 1
-	roundDisplay.x = 0.9*display.contentWidth
+	roundDisplay.x = 0.85*display.contentWidth
 	roundDisplay.y = 0.05*display.contentHeight
 
-	scoreDisplay = display.newText( "Score:", 0, 0, "Let's go Digital", 25 )
+	scoreText = display.newText( "Score:", 0, 0, "Let's go Digital", 25 )
+	scoreText:setTextColor(255, 255, 255) -- white
+	scoreText.alpha = 1
+	scoreText.x = centerX
+	scoreText.y = 0.42 * display.contentHeight
+
+	scoreDisplay = display.newText( "00", 0, 0, "Let's go Digital", 58 )
 	scoreDisplay:setTextColor(255, 255, 255) -- white
 	scoreDisplay.alpha = 1
 	scoreDisplay.x = centerX
-	scoreDisplay.y = 0.45*display.contentHeight
-
-
+	scoreDisplay.y = 0.50*display.contentHeight
 
 	redSquare = display.newImage('res/red1.png')
 	blueSquare = display.newImage('res/blue2.png')
@@ -95,11 +126,10 @@ function scene:createScene( event )
 	blueSquare:scale(scaleSize,scaleSize)
 	yellowSquare:scale(scaleSize,scaleSize)
 
-	local initialAlpha = 1
-	redSquare.alpha = initialAlpha
-	blueSquare.alpha = initialAlpha
-	greenSquare.alpha = initialAlpha
-	yellowSquare.alpha = initialAlpha
+	redSquare.alpha = 1
+	blueSquare.alpha = 1
+	greenSquare.alpha = 1
+	yellowSquare.alpha = 1
 
 	local xSpace = 0.22
 	local ySpace = 0.147
@@ -122,9 +152,10 @@ function scene:createScene( event )
 	group:insert(blueSquare)
 	group:insert(yellowSquare)
 	group:insert(restartButton)
+	group:insert(scoreText)
 	group:insert(scoreDisplay)
+	group:insert(roundDisplay)
 
-	local difficulty = event.params.difficulty
 	-----------------------------------------------------------------------------
 		
 	--	CREATE display objects and add them to 'group' here.
@@ -170,12 +201,12 @@ function scene:enterScene( event )
 
 	-- true = correct, false = incorrect
 	local function updateScore( upScore )
-		if upScore == true then -- TODO: can we just say if upScore??
+		if upScore then
 			score = score + 100
 		else
 			score = score - 100
 		end
-		scoreDisplay.text = "Score: " .. score
+		scoreDisplay.text = score
 	end
 
 	local function updateGame( event )

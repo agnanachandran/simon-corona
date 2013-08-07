@@ -57,6 +57,20 @@ function scene:createScene( event )
 	local transitionTime = 300
 	local group = self.view
 
+	-- GLOBAL SPEAKER
+    speakerButton = display.newImage('res/speaker_on.png')
+    speakerButton:scale(0.08, 0.08)
+    speakerButton.x = 0.1*display.contentWidth
+    speakerButton.y = 0.92*display.contentHeight
+
+    musicButton = display.newImage('res/music_on.png')
+    musicButton:scale(0.1, 0.1)
+    musicButton.x = 0.9*display.contentWidth
+    musicButton.y = 0.92*display.contentHeight
+    group:insert(speakerButton)
+    group:insert(musicButton)
+    -- GLOBAL SPEAKER
+
 	local function onEasyTap( event )
 		local phase = event.phase
 		local target = event.target
@@ -99,7 +113,7 @@ easyButton = widget.newButton
     overFile = 'res/blue_button_over.png',
 	font = font.normal,
 	fontSize = stdFontSize,
-    labelColor = { default = {0, 0, 0}, over = {255, 255, 255} },
+    labelColor = { default = {255, 255, 255}, over = {0, 0, 0} },
 	onEvent = onEasyTap
 }
 
@@ -117,7 +131,7 @@ mediumButton = widget.newButton
     overFile = 'res/red_button_over.png',
 	font = font.normal,
 	fontSize = stdFontSize,
-    labelColor = { default = {0, 0, 0}, over = {255, 255, 255} },
+    labelColor = { default = {255, 255, 255}, over = {0, 0, 0} },
 	onEvent = onEasyTap
 }
 
@@ -135,7 +149,7 @@ hardButton = widget.newButton
     overFile = 'res/green_button_over.png',
 	font = font.normal,
 	fontSize = stdFontSize,
-    labelColor = { default = {0, 0, 0}, over = {255, 255, 255} },
+    labelColor = { default = {255, 255, 255}, over = {0, 0, 0} },
 	onEvent = onEasyTap
 }
 
@@ -153,7 +167,7 @@ insaneButton = widget.newButton
     overFile = 'res/yellow_button_over.png',
 	font = font.normal,
 	fontSize = stdFontSize,
-    labelColor = { default = {0, 0, 0}, over = {255, 255, 255} },
+    labelColor = { default = {255, 255, 255}, over = {0, 0, 0} },
 	onEvent = onEasyTap
 }
 
