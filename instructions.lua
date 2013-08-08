@@ -37,7 +37,6 @@ local centerX = display.contentCenterX
 local centerY = display.contentCenterY
 local borderbg
 local instructionsTitle
-local instructionsText
 local restartButton
 ----------------------------------------------------------------------------------
 -- BEGINNING OF YOUR IMPLEMENTATION
@@ -148,6 +147,33 @@ function scene:createScene( event )
 	transition.to( instructionsText10, {time=1000, alpha=1})
 	transition.to( instructionsText11, {time=1000, alpha=1})
 	group:insert(borderbg)
+	group:insert(restartButton)
+	group:insert(instructionsTitle)
+	group:insert(instructionsText1)
+	group:insert(instructionsText2)
+	group:insert(instructionsText3)
+	group:insert(instructionsText4)
+	group:insert(instructionsText5)
+	group:insert(instructionsText6)
+	group:insert(instructionsText7)
+	group:insert(instructionsText8)
+	group:insert(instructionsText9)
+	group:insert(instructionsText10)
+	group:insert(instructionsText11)
+
+	local function goBack( event )
+		local effects =
+		{
+		effect = "fade",
+		time = 300,
+		}
+		storyboard.gotoScene( "homescreen", effects )
+		-- storyboard.removeScene( "playscreen" )
+	end
+
+	-- listeners
+	restartButton:addEventListener('tap', goBack)
+
 -----------------------------------------------------------------------------
 
 --	CREATE display objects and add them to 'group' here.

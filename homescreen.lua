@@ -253,7 +253,7 @@ function scene:createScene( event )
             overFile = 'res/yellow_button_over.png',
             fontSize = stdFontSize,
             labelColor = { default = {255, 255, 255}, over = {245, 245, 245} },
-            onEvent = onSettingsTap
+            onEvent = onCreditsTap
         }
         creditsButton.baseLabel = "Credits"
         creditsButton.x = centerX
@@ -302,10 +302,10 @@ function scene:enterScene( event )
     function showCreditsText()
         local effects =
         {
-        effect = "slideDown",
+        effect = "fade",
         time = 300,
         }
-        storyboard.gotoScene( "credits", effects)
+        storyboard.gotoScene( "gamecredits", effects)
     end
 
     --  INSERT code here (e.g. start timers, load audio, start listeners, etc.)
