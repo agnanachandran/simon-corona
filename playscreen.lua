@@ -15,16 +15,16 @@ font.bold = "Helvetica-Bold"
 font.italic = "Helvetica-Oblique"
 
 if ( device.isAndroid ) then
-   font.normal = "DroidSans"
-   font.bold = "DroidSans-Bold"
-   if ( device.isNook ) then
-      font.normal = "Arial"
-      font.bold = "Arial Bold"
-   elseif ( device.isKindleFire ) then
-      font.normal = "arial"
-      font.bold = "arial bold"
-   end
-end
+	font.normal = "DroidSans"
+	font.bold = "DroidSans-Bold"
+	if ( device.isNook ) then
+		font.normal = "Arial"
+		font.bold = "Arial Bold"
+		elseif ( device.isKindleFire ) then
+			font.normal = "arial"
+			font.bold = "arial bold"
+		end
+	end
 
 ----------------------------------------------------------------------------------
 -- 
@@ -52,6 +52,10 @@ local centerY = display.contentCenterY
 local sequence = {}
 local scoreText
 local scoreDisplay
+local roundNumber
+local addEventListeners
+local removeEventListeners
+local updateGame
 
 ---------------------------------------------------------------------------------
 -- BEGINNING OF YOUR IMPLEMENTATION
@@ -61,219 +65,243 @@ local scoreDisplay
 function scene:createScene( event )
 	local group = self.view
 
-	-- GLOBAL SPEAKER
-    speakerButton = display.newImage('res/speaker_on.png')
-    speakerButton:scale(0.08, 0.08)
-    speakerButton.x = 0.1*display.contentWidth
-    speakerButton.y = 0.92*display.contentHeight
+-- GLOBAL SPEAKER
+speakerButton = display.newImage('res/speaker_on.png')
+speakerButton:scale(0.08, 0.08)
+speakerButton.x = 0.1*display.contentWidth
+speakerButton.y = 0.92*display.contentHeight
 
-    musicButton = display.newImage('res/music_on.png')
-    musicButton:scale(0.1, 0.1)
-    musicButton.x = 0.9*display.contentWidth
-    musicButton.y = 0.92*display.contentHeight
-    group:insert(speakerButton)
-    group:insert(musicButton)
-	-- GLOBAL SPEAKER
+musicButton = display.newImage('res/music_on.png')
+musicButton:scale(0.1, 0.1)
+musicButton.x = 0.9*display.contentWidth
+musicButton.y = 0.92*display.contentHeight
+group:insert(speakerButton)
+group:insert(musicButton)
+-- GLOBAL SPEAKER
 
-	local difficulty = event.params.difficulty
-	if difficulty == "easy" then
-		timeDelay = 2000
+local difficulty = event.params.difficulty
+if difficulty == "easy" then
+	timeDelay = 2000
 	elseif difficulty == "medium" then
 		timeDelay = 1500
-	-- Hard and insane have the same time delay.
-	else
-		timeDelay = 500
-	end
-	local scaleSize = 0.3
+-- Hard and insane have the same time delay.
+else
+	timeDelay = 500
+end
+local scaleSize = 0.3
 
-	-- Background wheel for 4 coloured panels
-	wheel = display.newImage('res/wheel.png')
-	wheel.x = 0.5*display.contentWidth
-	wheel.y = 0.5*display.contentHeight
-	wheel:scale(scaleSize, scaleSize)
+-- Background wheel for 4 coloured panels
+wheel = display.newImage('res/wheel.png')
+wheel.x = 0.5*display.contentWidth
+wheel.y = 0.5*display.contentHeight
+wheel:scale(scaleSize, scaleSize)
 
-	roundDisplay = display.newText( "Round:   ", 0, 0, "Let's go Digital", 25)
-	roundDisplay:setTextColor(0, 0, 0) -- white
-	roundDisplay.alpha = 1
-	roundDisplay.x = 0.85*display.contentWidth
-	roundDisplay.y = 0.05*display.contentHeight
+roundNumber = 1
 
-	scoreText = display.newText( "Score:", 0, 0, "Let's go Digital", 25 )
-	scoreText:setTextColor(255, 255, 255) -- white
-	scoreText.alpha = 1
-	scoreText.x = centerX
-	scoreText.y = 0.42 * display.contentHeight
+roundDisplay = display.newText( "Round: " .. roundNumber, 0, 0, "Glametrix", 29)
+roundDisplay:setTextColor(0, 0, 0) -- white
+roundDisplay.alpha = 1
+roundDisplay.x = 0.85*display.contentWidth
+roundDisplay.y = 0.05*display.contentHeight
 
-	scoreDisplay = display.newText( "00", 0, 0, "Let's go Digital", 58 )
-	scoreDisplay:setTextColor(255, 255, 255) -- white
-	scoreDisplay.alpha = 1
-	scoreDisplay.x = centerX
-	scoreDisplay.y = 0.50*display.contentHeight
+scoreText = display.newText( "Score:", 0, 0, "Let's go Digital", 25 )
+scoreText:setTextColor(255, 255, 255) -- white
+scoreText.alpha = 1
+scoreText.x = centerX
+scoreText.y = 0.42 * display.contentHeight
 
-	redSquare = display.newImage('res/red1.png')
-	blueSquare = display.newImage('res/blue2.png')
-	yellowSquare = display.newImage('res/yellow3.png')
-	greenSquare = display.newImage('res/green4.png')
+scoreDisplay = display.newText( "00", 0, 0, "Let's go Digital", 38 )
+scoreDisplay:setTextColor(255, 255, 255) -- white
+scoreDisplay.alpha = 1
+scoreDisplay.x = centerX
+scoreDisplay.y = 0.50*display.contentHeight
 
-	restartButton = display.newImage('res/restart.png')	
-	restartButton.x = 0.1*display.contentWidth
-	restartButton.y = 0.1*display.contentHeight
+redSquare = display.newImage('res/red1.png')
+blueSquare = display.newImage('res/blue2.png')
+yellowSquare = display.newImage('res/yellow3.png')
+greenSquare = display.newImage('res/green4.png')
 
-	restartButton:scale(scaleSize,scaleSize)
+restartButton = display.newImage('res/restart.png')	
+restartButton.x = 0.1*display.contentWidth
+restartButton.y = 0.1*display.contentHeight
 
-	redSquare:scale(scaleSize,scaleSize)
-	greenSquare:scale(scaleSize,scaleSize)
-	blueSquare:scale(scaleSize,scaleSize)
-	yellowSquare:scale(scaleSize,scaleSize)
+restartButton:scale(scaleSize,scaleSize)
 
-	redSquare.alpha = 1
-	blueSquare.alpha = 1
-	greenSquare.alpha = 1
-	yellowSquare.alpha = 1
+redSquare:scale(scaleSize,scaleSize)
+greenSquare:scale(scaleSize,scaleSize)
+blueSquare:scale(scaleSize,scaleSize)
+yellowSquare:scale(scaleSize,scaleSize)
 
-	local xSpace = 0.22
-	local ySpace = 0.147
-	local xfirst = centerX - xSpace*display.contentWidth
-	local xsecond = centerX + xSpace*display.contentWidth
-	local yfirst = centerY - ySpace*display.contentHeight
-	local ysecond = centerY + ySpace*display.contentHeight
-	redSquare.x = xfirst
-	redSquare.y = yfirst
-	greenSquare.x = xfirst
-	greenSquare.y = ysecond
-	blueSquare.x = xsecond
-	blueSquare.y = yfirst
-	yellowSquare.x = xsecond
-	yellowSquare.y = ysecond
+redSquare.alpha = 1
+blueSquare.alpha = 1
+greenSquare.alpha = 1
+yellowSquare.alpha = 1
 
-	group:insert(wheel)
-	group:insert(redSquare)
-	group:insert(greenSquare)
-	group:insert(blueSquare)
-	group:insert(yellowSquare)
-	group:insert(restartButton)
-	group:insert(scoreText)
-	group:insert(scoreDisplay)
-	group:insert(roundDisplay)
+local xSpace = 0.22
+local ySpace = 0.147
+local xfirst = centerX - xSpace*display.contentWidth
+local xsecond = centerX + xSpace*display.contentWidth
+local yfirst = centerY - ySpace*display.contentHeight
+local ysecond = centerY + ySpace*display.contentHeight
+redSquare.x = xfirst
+redSquare.y = yfirst
+greenSquare.x = xfirst
+greenSquare.y = ysecond
+blueSquare.x = xsecond
+blueSquare.y = yfirst
+yellowSquare.x = xsecond
+yellowSquare.y = ysecond
 
-	-----------------------------------------------------------------------------
-		
-	--	CREATE display objects and add them to 'group' here.
-	--	Example use-case: Restore 'group' from previously saved state.
-	
-	-----------------------------------------------------------------------------
-	
+group:insert(wheel)
+group:insert(redSquare)
+group:insert(greenSquare)
+group:insert(blueSquare)
+group:insert(yellowSquare)
+group:insert(restartButton)
+group:insert(scoreText)
+group:insert(scoreDisplay)
+group:insert(roundDisplay)
+
+-----------------------------------------------------------------------------
+
+--	CREATE display objects and add them to 'group' here.
+--	Example use-case: Restore 'group' from previously saved state.
+
+-----------------------------------------------------------------------------
+
 end
 
 
 -- Called immediately after scene has moved onscreen:
 function scene:enterScene( event )
-	--------------------------------------------------------------
-		
-	--	INSERT code here (e.g. start timers, load audio, start listeners, etc.)
-	
-	-----------------------------------------------------------------------------
+--------------------------------------------------------------
 
-	local difficulty = event.params.difficulty
+--	INSERT code here (e.g. start timers, load audio, start listeners, etc.)
 
-	local tab = { redSquare, greenSquare, blueSquare, yellowSquare }
-	local numPanels = #tab -- could just change to 4
-	local isRight
-	local alive = true
-	local count = 0
+-----------------------------------------------------------------------------
 
-	local function flashPanel()
-		if (count <= #sequence) then
-			transition.to (tab[sequence[count]], {time=700, alpha=0.4})
-			transition.to (tab[sequence[count]], {time=700, delay=700, alpha=1})
-			count = count + 1
-		end 
-	end
+local difficulty = event.params.difficulty
 
-	local function playGame()
-		table.insert( sequence, math.random( numPanels ) )
-		count = 1
-		timer.performWithDelay( 1400, flashPanel, #sequence)
-	end
+local tab = { redSquare, greenSquare, blueSquare, yellowSquare }
+local numPanels = #tab -- could just change to 4
+local isRight
+local alive = true
+local count = 0
 
-	local function playGameOverSound()
-	end
-
-	-- true = correct, false = incorrect
-	local function updateScore( upScore )
-		if upScore then
-			score = score + 100
-		else
-			score = score - 100
-		end
-		scoreDisplay.text = score
-	end
-
-	local function updateGame( event )
-		local obj = event.target
-	
-		if tab[sequence[currentPos]] == obj then
-			updateScore( true )
-		else
-			updateScore( false )
-			playGameOverSound()
-		end
-
-		if currentPos == #sequence then
-			currentPos = 1
-			playGame()
-			return true
-		end
-
-		currentPos = currentPos + 1
-		return true
-	end
-	--can we change to iterate over all elements in 'tab', and add this eventlistener?
-
-	local function goBack( event )
-		local effects =
-		{
-		effect = "slideRight",
-		time = 750,
-		}
-		storyboard.gotoScene( "homescreen", effects )
-		-- storyboard.removeScene( "playscreen" )
-	end
-
-	-- listeners
+-- listeners
+local function addEventListeners()
 	redSquare:addEventListener('tap', updateGame)
 	greenSquare:addEventListener('tap', updateGame)
 	yellowSquare:addEventListener('tap', updateGame)
 	blueSquare:addEventListener('tap', updateGame)
-	restartButton:addEventListener('tap', goBack)
+end
 
-	-- start game loop
-	playGame()
+local function removeEventListeners()
+	redSquare:removeEventListener('tap', updateGame)
+	greenSquare:removeEventListener('tap', updateGame)
+	yellowSquare:removeEventListener('tap', updateGame)
+	blueSquare:removeEventListener('tap', updateGame)
+end
+
+local function flashPanel()
+	if (count <= #sequence) then
+		transition.to (tab[sequence[count]], {time=700, alpha=0.4})
+		transition.to (tab[sequence[count]], {time=700, delay=700, alpha=1})
+		count = count + 1
+	end 
+end
+
+local function playGame()
+	table.insert( sequence, math.random( numPanels ) )
+	count = 1
+	timer.performWithDelay( 1400, flashPanel, #sequence)
+end
+
+local function gameOver()
+	local effects =
+	{
+	effect = "fade",
+	time = 300,
+}
+storyboard.gotoScene( "homescreen", effects ) -- change to gameover scene
+end
+
+-- true = correct, false = incorrect
+local function updateScore( upScore )
+	if upScore then
+		score = score + 100
+	else
+		score = score - 100 -- take out later
+	end
+	scoreDisplay.text = score
+end
+
+local function updateRoundNumber()
+	roundNumber = roundNumber + 1
+	roundDisplay.text = "Round: " .. roundNumber
+end
+
+function updateGame( event )
+	local obj = event.target
+
+	if tab[sequence[currentPos]] == obj then
+		updateScore( true )
+	else
+		updateScore( false )
+		gameOver()
+	end
+
+	if currentPos == #sequence then
+		currentPos = 1
+		playGame()
+		updateRoundNumber()
+		return true
+	end
+
+	currentPos = currentPos + 1
+	return true
+end
+--can we change to iterate over all elements in 'tab', and add this eventlistener?
+
+local function goBack( event )
+	local effects =
+	{
+	effect = "slideRight",
+	time = 750,
+}
+storyboard.gotoScene( "homescreen", effects )
+-- storyboard.removeScene( "playscreen" )
+end
+
+addEventListeners()
+restartButton:addEventListener('tap', goBack)
+-- start game loop
+playGame()
 
 end
 
 -- Called when scene is about to move offscreen:
 function scene:exitScene( event )
 	local group = self.view
-	-- display.remove(group)
-	-----------------------------------------------------------------------------
-	
-	--	INSERT code here (e.g. stop timers, remove listeners, unload sounds, etc.)
-	
-	-----------------------------------------------------------------------------
-	
+-- display.remove(group)
+-----------------------------------------------------------------------------
+
+--	INSERT code here (e.g. stop timers, remove listeners, unload sounds, etc.)
+
+-----------------------------------------------------------------------------
+
 end
 
 -- Called prior to the removal of scene's "view" (display group)
 function scene:destroyScene( event )
 	local group = self.view
-	
-	-----------------------------------------------------------------------------
-	
-	--	INSERT code here (e.g. remove listeners, widgets, save state, etc.)
-	
-	-----------------------------------------------------------------------------
-	
+
+-----------------------------------------------------------------------------
+
+--	INSERT code here (e.g. remove listeners, widgets, save state, etc.)
+
+-----------------------------------------------------------------------------
+
 end
 
 ---------------------------------------------------------------------------------

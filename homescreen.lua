@@ -96,12 +96,31 @@ function scene:createScene( event )
     blueSquare:scale(scaleSize,scaleSize)
     yellowSquare:scale(scaleSize,scaleSize)
 
-    local spaceApart = 0.11
+    local spaceApart = 0.000001
     local upCenterY = 0.3*centerY
-    local xfirst = centerX - spaceApart*display.contentWidth
-    local xsecond = centerX + spaceApart*display.contentWidth
-    local yfirst = upCenterY - 0.025*display.contentHeight
-    local ysecond = upCenterY + 0.122*display.contentHeight
+    local xfirst = centerX*1.008
+    local xsecond = centerX*0.99
+    local yfirst = upCenterY + 0.054*display.contentHeight
+    local ysecond = upCenterY + 0.045*display.contentHeight
+
+    wheel.alpha = 0
+    redSquare.alpha = 0
+    greenSquare.alpha = 0
+    blueSquare.alpha = 0
+    yellowSquare.alpha = 0
+
+    local timeTillOpaque = 1000
+    transition.to(wheel, { time=timeOpaque, alpha=1})
+    transition.to(redSquare, { time=timeOpaque, alpha=1})
+    transition.to(greenSquare, { time=timeOpaque, alpha=1})
+    transition.to(blueSquare, { time=timeOpaque, alpha=1})
+    transition.to(yellowSquare, { time=timeOpaque, alpha=1})
+
+    redSquare:setReferencePoint(display.BottomRightReferencePoint)
+    greenSquare:setReferencePoint(display.TopRightReferencePoint)
+    blueSquare:setReferencePoint(display.BottomLeftReferencePoint)
+    yellowSquare:setReferencePoint(display.TopLeftReferencePoint)
+
     redSquare.x = xfirst
     redSquare.y = yfirst
     greenSquare.x = xfirst
@@ -111,19 +130,14 @@ function scene:createScene( event )
     yellowSquare.x = xsecond
     yellowSquare.y = ysecond
 
-    wheel.alpha=0
-    redSquare.alpha = 0
-    greenSquare.alpha = 0
-    blueSquare.alpha = 0
-    yellowSquare.alpha = 0
+    -- local currAngle = 1
 
-    local timeTillOpaque = 1000
-    transition.to(wheel, {time=timeOpaque, alpha=1})
-    transition.to(redSquare, { time=timeOpaque, alpha=1})
-    transition.to(greenSquare, { time=timeOpaque, alpha=1})
-    transition.to(blueSquare, { time=timeOpaque, alpha=1})
-    transition.to(yellowSquare, { time=timeOpaque, alpha=1})
-
+    -- local function moveWithAngle( angle )
+    --     redSquare:translate(math.cos(math.rad(angle))*redSquare.contentWidth, 0)
+    --     redSquare:rotate(angle)
+    --     currAngle = currAngle + 1
+    -- end
+    -- timer.performWithDelay( 200, moveWithAngle(currAngle), 5)
     group:insert(wheel)
     group:insert(blueSquare)
     group:insert(redSquare)
