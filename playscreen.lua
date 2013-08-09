@@ -53,8 +53,7 @@ local sequence = {}
 local scoreText
 local scoreDisplay
 local roundNumber
-local addEventListeners
-local removeEventListeners
+local panels
 local updateGame
 
 ---------------------------------------------------------------------------------
@@ -162,6 +161,21 @@ group:insert(scoreText)
 group:insert(scoreDisplay)
 group:insert(roundDisplay)
 
+panels = { redSquare, greenSquare, blueSquare, yellowSquare }
+
+function addEventListeners( obj )
+	for i=1,#panels do
+		panels[i]:addEventListener('tap', updateGame)
+	end
+end
+
+function removeEventListeners()
+	redSquare:removeEventListener('tap', updateGame)
+	greenSquare:removeEventListener('tap', updateGame)
+	yellowSquare:removeEventListener('tap', updateGame)
+	blueSquare:removeEventListener('tap', updateGame)
+end
+
 -----------------------------------------------------------------------------
 
 --	CREATE display objects and add them to 'group' here.
@@ -182,42 +196,30 @@ function scene:enterScene( event )
 
 local difficulty = event.params.difficulty
 
-local tab = { redSquare, greenSquare, blueSquare, yellowSquare }
-local numPanels = #tab -- could just change to 4
+local numPanels = #panels -- could just change to 4
 local isRight
 local alive = true
 local count = 0
-
--- listeners
-local function addEventListeners()
-	redSquare:addEventListener('tap', updateGame)
-	greenSquare:addEventListener('tap', updateGame)
-	yellowSquare:addEventListener('tap', updateGame)
-	blueSquare:addEventListener('tap', updateGame)
-end
-
-local function removeEventListeners()
-	redSquare:removeEventListener('tap', updateGame)
-	greenSquare:removeEventListener('tap', updateGame)
-	yellowSquare:removeEventListener('tap', updateGame)
-	blueSquare:removeEventListener('tap', updateGame)
-end
+score = 0
 
 local function flashPanel()
 	if (count <= #sequence) then
-		transition.to (tab[sequence[count]], {time=700, alpha=0.4})
-		transition.to (tab[sequence[count]], {time=700, delay=700, alpha=1})
+		transition.to (panels[sequence[count]], {time=700, alpha=0.4})
+		transition.to (panels[sequence[count]], {time=700, delay=700, alpha=1})
+		if count == #sequence then
+			timer.performWithDelay(1400, addEventListeners)
+		end
 		count = count + 1
 	end 
 end
 
-local function playGame()
+function playGame()
 	table.insert( sequence, math.random( numPanels ) )
 	count = 1
 	timer.performWithDelay( 1400, flashPanel, #sequence)
 end
 
-local function gameOver()
+function gameOver()
 	local effects =
 	{
 	effect = "fade",
@@ -227,12 +229,8 @@ storyboard.gotoScene( "homescreen", effects ) -- change to gameover scene
 end
 
 -- true = correct, false = incorrect
-local function updateScore( upScore )
-	if upScore then
-		score = score + 100
-	else
-		score = score - 100 -- take out later
-	end
+function updateScore()
+	score = score + 100
 	scoreDisplay.text = score
 end
 
@@ -244,24 +242,26 @@ end
 function updateGame( event )
 	local obj = event.target
 
-	if tab[sequence[currentPos]] == obj then
-		updateScore( true )
+	if panels[sequence[currentPos]] == obj then
+		updateScore()
+		if currentPos == #sequence then
+			updateRoundNumber()
+		end
 	else
-		updateScore( false )
 		gameOver()
+		return true
 	end
 
 	if currentPos == #sequence then
 		currentPos = 1
+		timer.performWithDelay(1, removeEventListeners)
 		playGame()
-		updateRoundNumber()
-		return true
+	else
+		currentPos = currentPos + 1
 	end
 
-	currentPos = currentPos + 1
 	return true
 end
---can we change to iterate over all elements in 'tab', and add this eventlistener?
 
 local function goBack( event )
 	local effects =
@@ -273,7 +273,6 @@ storyboard.gotoScene( "homescreen", effects )
 -- storyboard.removeScene( "playscreen" )
 end
 
-addEventListeners()
 restartButton:addEventListener('tap', goBack)
 -- start game loop
 playGame()
@@ -283,9 +282,9 @@ end
 -- Called when scene is about to move offscreen:
 function scene:exitScene( event )
 	local group = self.view
+	storyboard.removeScene("playscreen")
 -- display.remove(group)
 -----------------------------------------------------------------------------
-
 --	INSERT code here (e.g. stop timers, remove listeners, unload sounds, etc.)
 
 -----------------------------------------------------------------------------
@@ -295,7 +294,6 @@ end
 -- Called prior to the removal of scene's "view" (display group)
 function scene:destroyScene( event )
 	local group = self.view
-
 -----------------------------------------------------------------------------
 
 --	INSERT code here (e.g. remove listeners, widgets, save state, etc.)

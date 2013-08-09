@@ -285,7 +285,6 @@ end
 
 -- Called immediately after scene has moved onscreen:
 function scene:enterScene( event )
-    storyboard.removeScene("playscreen")
     function showDifficulty() 
         local options =
         {
@@ -327,7 +326,6 @@ end
 -- Called when scene is about to move offscreen:
 
 function scene:exitScene( event )
-
     --  INSERT code here (e.g. stop timers, remove listeners, unload sounds, etc.)
 
 end
