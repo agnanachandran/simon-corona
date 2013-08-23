@@ -55,6 +55,7 @@ local scoreDisplay
 local roundNumber
 local panels
 local updateGame
+local timeSinceStartedGame
 
 ---------------------------------------------------------------------------------
 -- BEGINNING OF YOUR IMPLEMENTATION
@@ -63,7 +64,7 @@ local updateGame
 -- Called when the scene's view does not exist:
 function scene:createScene( event )
 	local group = self.view
-
+	timeSinceStartedGame = system.getTimer()
 -- GLOBAL SPEAKER
 speakerButton = display.newImage('res/speaker_on.png')
 speakerButton:scale(0.08, 0.08)
@@ -76,7 +77,6 @@ musicButton.x = 0.9*display.contentWidth
 musicButton.y = 0.92*display.contentHeight
 group:insert(speakerButton)
 group:insert(musicButton)
--- GLOBAL SPEAKER
 
 local difficulty = event.params.difficulty
 if difficulty == "easy" then
@@ -170,10 +170,9 @@ function addEventListeners( obj )
 end
 
 function removeEventListeners()
-	redSquare:removeEventListener('tap', updateGame)
-	greenSquare:removeEventListener('tap', updateGame)
-	yellowSquare:removeEventListener('tap', updateGame)
-	blueSquare:removeEventListener('tap', updateGame)
+	for i=1,#panels do
+		panels[i]:removeEventListener('tap', updateGame)
+	end
 end
 
 -----------------------------------------------------------------------------
@@ -220,15 +219,15 @@ function playGame()
 end
 
 function gameOver()
-	local effects =
+	local options =
 	{
-	effect = "fade",
-	time = 300,
-}
-storyboard.gotoScene( "homescreen", effects ) -- change to gameover scene
+		effect = "fade",
+		time = 300,
+		params = {finalScore = score, finalRound = roundNumber, finalTime = math.floor((system.getTimer() - timeSinceStartedGame)/1000)}
+	}
+	storyboard.gotoScene( "gameover", options) -- change to gameover scene
 end
 
--- true = correct, false = incorrect
 function updateScore()
 	score = score + 100
 	scoreDisplay.text = score
