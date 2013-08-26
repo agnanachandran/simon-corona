@@ -10,7 +10,6 @@ local device = require( "device")
 local ads = require( "ads" )
 local scene = storyboard.newScene()
 
-
 ----------------------------------------------------------------------------------
 -- 
 --	NOTE:
@@ -25,7 +24,6 @@ local provider = "admob"
 
 -- Your application ID
 local appID = "YOUR_APPLICATION_ID_HERE"
-
 
 local font = {}
 font.normal = "Helvetica"
@@ -48,7 +46,9 @@ local leftAlign = centerX - 0.3 * display.contentWidth
 local centerY = display.contentCenterY
 local borderbg
 local gameOverTitle
-local gameoverTexts = {gameoverText1,gameoverText2, gameoverText3, gameoverText4, gameoverText5, gameoverText6, gameoverText7}
+local scoreText
+local roundText
+local timePlayedText
 local restartButton
 ----------------------------------------------------------------------------------
 -- BEGINNING OF YOUR IMPLEMENTATION
@@ -66,9 +66,6 @@ end
 
 -- Called when the scene's view does not exist:
 function scene:createScene( event )
-	local group = self.view
-	local params = event.params
-
 	local scaleSize = 0.2
 	restartButton = display.newImage('res/restart.png')
 	restartButton.alpha = 0
@@ -89,62 +86,9 @@ function scene:createScene( event )
 	gameoverTitle.y = 0.1 * display.contentHeight
 	gameoverTitle:setTextColor(255, 0, 0)
 
-
-	gameoverText1 = display.newText("Score: " .. params.finalScore, 0, 0, "Glametrix", 26)
-	gameoverText1:setReferencePoint(display.CenterLeftReferencePoint)
-	gameoverText1.x = leftAlign
-	gameoverText1.y = 0.2 * display.contentHeight
-
-	gameoverText2 = display.newText("Round: " .. params.finalRound, 0, 0, "Glametrix", 26)
-	gameoverText2:setReferencePoint(display.CenterLeftReferencePoint)
-	gameoverText2.x = leftAlign
-	gameoverText2.y = 0.30 * display.contentHeight
-
-	gameoverText3 = display.newText("Time played: " .. timeInMins( params.finalTime ), 0, 0, "Glametrix", 22)
-	gameoverText3:setReferencePoint(display.CenterLeftReferencePoint)
-	gameoverText3.x = leftAlign
-	gameoverText3.y = 0.40 * display.contentHeight
-
-	gameoverText4 = display.newText("SDK and Lua.", 0, 0, "Glametrix", 22)
-	gameoverText4:setReferencePoint(display.CenterLeftReferencePoint)
-	gameoverText4.x = leftAlign
-	gameoverText4.y = 0.45 * display.contentHeight
-
-	gameoverText5 = display.newText("", 0, 0, "Glametrix", 22)
-	gameoverText5.x = leftAlign
-	gameoverText5.y = 0.5 * display.contentHeight
-
-	gameoverText6 = display.newText("Your job is to repeat the", 0, 0, "Glametrix", 22)
-	gameoverText6.x = leftAlign
-	gameoverText6.y = 0.6 * display.contentHeight
-
-	gameoverText7 = display.newText("pattern. It will successively", 0, 0, "Glametrix", 22)
-	gameoverText7.x = leftAlign
-	gameoverText7.y = 0.70 * display.contentHeight
-
-	gameoverTexts = {gameoverText1,gameoverText2, gameoverText3, gameoverText4, gameoverText5, gameoverText6, gameoverText7}
-	
-	for i=1, #gameoverTexts do 
-		gameoverTexts[i].alpha = 0
-		gameoverTexts[i]:setTextColor(255, 255, 255)
-		transition.to( gameoverTexts[i], {time=1000, alpha=1} )
-		group:insert( gameoverTexts[i] )
-	end
-
-	transition.to( borderbg, {time=1000, alpha=1})
-	transition.to( restartButton, {time=1000, alpha=1})
-	transition.to( gameoverTitle, {time=1000, alpha=1})
-
-	group:insert(borderbg)
-	group:insert(restartButton)
-	group:insert(gameoverTitle)
-	group:insert(gameoverText1)
-	group:insert(gameoverText2)
-	group:insert(gameoverText3)
-	group:insert(gameoverText4)
-	group:insert(gameoverText5)
-	group:insert(gameoverText6)
-	group:insert(gameoverText7)
+	scoreText = display.newText("", 0, 0, "Glametrix", 26)
+	roundText = display.newText("", 0, 0, "Glametrix", 26)
+	timePlayedText = display.newText("", 0, 0, "Glametrix", 26)
 
 	local function goBack( event )
 		local effects =
@@ -170,6 +114,44 @@ end
 
 -- Called immediately after scene has moved onscreen:
 function scene:enterScene( event )
+	local group = self.view
+	local params = event.params
+	local TRANSPARENT_TIME = 500
+
+	scoreText.text = "Score: " .. params.finalScore
+	scoreText:setReferencePoint(display.CenterLeftReferencePoint)
+	scoreText.x = leftAlign
+	scoreText.y = 0.2 * display.contentHeight
+
+	roundText.text = "Round: " .. params.finalRound
+	roundText:setReferencePoint(display.CenterLeftReferencePoint)
+	roundText.x = leftAlign
+	roundText.y = 0.30 * display.contentHeight
+
+	timePlayedText.text = "Time played: " .. timeInMins( params.finalTime )
+	timePlayedText:setReferencePoint(display.CenterLeftReferencePoint)
+	timePlayedText.x = leftAlign
+	timePlayedText.y = 0.40 * display.contentHeight
+
+	gameoverTexts = {scoreText, roundText, timePlayedText}
+
+	for i=1, #gameoverTexts do
+		group:insert(gameoverTexts[i])
+		gameoverTexts[i].alpha = 0
+		gameoverTexts[i]:setTextColor(255, 255, 255)
+		transition.to( gameoverTexts[i], {time=TRANSPARENT_TIME, alpha=1} )
+	end
+
+	transition.to( borderbg, {time=TRANSPARENT_TIME, alpha=1})
+	transition.to( restartButton, {time=TRANSPARENT_TIME, alpha=1})
+	transition.to( gameoverTitle, {time=TRANSPARENT_TIME, alpha=1})
+
+	group:insert(borderbg)
+	group:insert(restartButton)
+	group:insert(gameoverTitle)
+	group:insert(scoreText)
+	group:insert(roundText)
+	group:insert(timePlayedText)
 
 --------------------------------------------------------------
 
