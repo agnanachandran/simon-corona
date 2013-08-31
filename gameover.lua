@@ -61,7 +61,12 @@ function timeInMins( secs )
 		end
 		return "0:" .. secs
 	end
-	return math.floor(secs/60) .. ":" .. secs % 60
+
+	leftOverSecs = secs % 60
+	if leftOverSecs <= 9 then
+		return math.floor(secs/60) .. ":0" .. leftOverSecs
+	end
+	return math.floor(secs/60) .. ":" .. leftOverSecs
 end
 
 -- Called when the scene's view does not exist:
@@ -115,7 +120,7 @@ end
 -- Called immediately after scene has moved onscreen:
 function scene:enterScene( event )
 	local group = self.view
-	local params = event.params
+	params = event.params
 	local TRANSPARENT_TIME = 500
 
 	scoreText.text = "Score: " .. params.finalScore
@@ -136,7 +141,6 @@ function scene:enterScene( event )
 	gameoverTexts = {scoreText, roundText, timePlayedText}
 
 	for i=1, #gameoverTexts do
-		group:insert(gameoverTexts[i])
 		gameoverTexts[i].alpha = 0
 		gameoverTexts[i]:setTextColor(255, 255, 255)
 		transition.to( gameoverTexts[i], {time=TRANSPARENT_TIME, alpha=1} )
@@ -162,7 +166,9 @@ end
 -- Called when scene is about to move offscreen:
 function scene:exitScene( event )
 	local group = self.view
-
+	transition.to(scoreText, {time=300, alpha=0})
+	transition.to(roundText, {time=300, alpha=0})
+	transition.to(timePlayedText, {time=300, alpha=0})
 -----------------------------------------------------------------------------
 
 --	INSERT code here (e.g. stop timers, remove listeners, unload sounds, etc.)

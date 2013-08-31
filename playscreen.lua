@@ -20,11 +20,11 @@ if ( device.isAndroid ) then
 	if ( device.isNook ) then
 		font.normal = "Arial"
 		font.bold = "Arial Bold"
-		elseif ( device.isKindleFire ) then
-			font.normal = "arial"
-			font.bold = "arial bold"
-		end
+	elseif ( device.isKindleFire ) then
+		font.normal = "arial"
+		font.bold = "arial bold"
 	end
+end
 
 ----------------------------------------------------------------------------------
 -- 
@@ -36,15 +36,16 @@ if ( device.isAndroid ) then
 ---------------------------------------------------------------------------------
 local wheel
 
-local redSquare
-local greenSquare
-local blueSquare
-local yellowSquare
+local redPanel
+local greenPanel
+local bluePanel
+local yellowPanel
 
 local restartButton
 
 local difficulty
-local timeDelay
+local panelOnTime
+local timeBetweenPanelChange
 local score = 0
 local currentPos = 1
 local centerX = display.contentCenterX
@@ -53,10 +54,14 @@ local sequence = {}
 local scoreText
 local scoreDisplay
 local roundNumber
-local panels
 local updateGame
 local timeSinceStartedGame
-
+local xSpace = 0.22
+local ySpace = 0.147
+local xfirst = centerX - xSpace*display.contentWidth
+local xsecond = centerX + xSpace*display.contentWidth
+local yfirst = centerY - ySpace*display.contentHeight
+local ysecond = centerY + ySpace*display.contentHeight
 ---------------------------------------------------------------------------------
 -- BEGINNING OF YOUR IMPLEMENTATION
 ---------------------------------------------------------------------------------
@@ -65,216 +70,293 @@ local timeSinceStartedGame
 function scene:createScene( event )
 	local group = self.view
 	timeSinceStartedGame = system.getTimer()
--- GLOBAL SPEAKER
-speakerButton = display.newImage('res/speaker_on.png')
-speakerButton:scale(0.08, 0.08)
-speakerButton.x = 0.1*display.contentWidth
-speakerButton.y = 0.92*display.contentHeight
+	-- GLOBAL SPEAKER
+	speakerButton = display.newImage('res/speaker_on.png')
+	speakerButton:scale(0.08, 0.08)
+	speakerButton.x = 0.1*display.contentWidth
+	speakerButton.y = 0.92*display.contentHeight
 
-musicButton = display.newImage('res/music_on.png')
-musicButton:scale(0.1, 0.1)
-musicButton.x = 0.9*display.contentWidth
-musicButton.y = 0.92*display.contentHeight
-group:insert(speakerButton)
-group:insert(musicButton)
+	musicButton = display.newImage('res/music_on.png')
+	musicButton:scale(0.1, 0.1)
+	musicButton.x = 0.9*display.contentWidth
+	musicButton.y = 0.92*display.contentHeight
+	group:insert(speakerButton)
+	group:insert(musicButton)
 
-local difficulty = event.params.difficulty
-if difficulty == "easy" then
-	timeDelay = 2000
-	elseif difficulty == "medium" then
-		timeDelay = 1500
--- Hard and insane have the same time delay.
-else
-	timeDelay = 500
-end
-local scaleSize = 0.3
+	scaleSize = 0.3
 
--- Background wheel for 4 coloured panels
-wheel = display.newImage('res/wheel.png')
-wheel.x = 0.5*display.contentWidth
-wheel.y = 0.5*display.contentHeight
-wheel:scale(scaleSize, scaleSize)
+	-- Background wheel for 4 coloured panels
+	wheel = display.newImage('res/wheel.png')
+	wheel.x = 0.5*display.contentWidth
+	wheel.y = 0.5*display.contentHeight
+	wheel:scale(scaleSize, scaleSize)
 
-roundNumber = 1
+	roundNumber = 1
 
-roundDisplay = display.newText( "Round: " .. roundNumber, 0, 0, "Glametrix", 29)
-roundDisplay:setTextColor(0, 0, 0) -- white
-roundDisplay.alpha = 1
-roundDisplay.x = 0.85*display.contentWidth
-roundDisplay.y = 0.05*display.contentHeight
+	roundDisplay = display.newText( "Round: " .. roundNumber, 0, 0, "Glametrix", 29)
+	roundDisplay:setTextColor(0, 0, 0) -- white
+	roundDisplay.alpha = 1
+	roundDisplay.x = 0.85*display.contentWidth
+	roundDisplay.y = 0.05*display.contentHeight
 
-scoreText = display.newText( "Score:", 0, 0, "Let's go Digital", 25 )
-scoreText:setTextColor(255, 255, 255) -- white
-scoreText.alpha = 1
-scoreText.x = centerX
-scoreText.y = 0.42 * display.contentHeight
+	scoreText = display.newText( "Score:", 0, 0, "Let's go Digital", 25 )
+	scoreText:setTextColor(255, 255, 255) -- white
+	scoreText.alpha = 1
+	scoreText.x = centerX
+	scoreText.y = 0.42 * display.contentHeight
 
-scoreDisplay = display.newText( "00", 0, 0, "Let's go Digital", 38 )
-scoreDisplay:setTextColor(255, 255, 255) -- white
-scoreDisplay.alpha = 1
-scoreDisplay.x = centerX
-scoreDisplay.y = 0.50*display.contentHeight
+	scoreDisplay = display.newText( "999000", 0, 0, "Let's go Digital", 38 )
+	scoreDisplay:setTextColor(255, 255, 255) -- white
+	scoreDisplay.alpha = 1
+	scoreDisplay.x = centerX
+	scoreDisplay.y = 0.50*display.contentHeight
 
-redSquare = display.newImage('res/red1.png')
-blueSquare = display.newImage('res/blue2.png')
-yellowSquare = display.newImage('res/yellow3.png')
-greenSquare = display.newImage('res/green4.png')
+	redPanel = display.newImage('res/red1.png')
+	bluePanel = display.newImage('res/blue2.png')
+	yellowPanel = display.newImage('res/yellow3.png')
+	greenPanel = display.newImage('res/green4.png')
 
-restartButton = display.newImage('res/restart.png')	
-restartButton.x = 0.1*display.contentWidth
-restartButton.y = 0.1*display.contentHeight
+	restartButton = display.newImage('res/restart.png')	
+	restartButton.x = 0.1*display.contentWidth
+	restartButton.y = 0.1*display.contentHeight
 
-restartButton:scale(scaleSize,scaleSize)
+	restartButton:scale(scaleSize,scaleSize)
 
-redSquare:scale(scaleSize,scaleSize)
-greenSquare:scale(scaleSize,scaleSize)
-blueSquare:scale(scaleSize,scaleSize)
-yellowSquare:scale(scaleSize,scaleSize)
+	redPanel:scale(scaleSize,scaleSize)
+	greenPanel:scale(scaleSize,scaleSize)
+	bluePanel:scale(scaleSize,scaleSize)
+	yellowPanel:scale(scaleSize,scaleSize)
 
-redSquare.alpha = 1
-blueSquare.alpha = 1
-greenSquare.alpha = 1
-yellowSquare.alpha = 1
+	redPanel.alpha = 1
+	bluePanel.alpha = 1
+	greenPanel.alpha = 1
+	yellowPanel.alpha = 1
 
-local xSpace = 0.22
-local ySpace = 0.147
-local xfirst = centerX - xSpace*display.contentWidth
-local xsecond = centerX + xSpace*display.contentWidth
-local yfirst = centerY - ySpace*display.contentHeight
-local ysecond = centerY + ySpace*display.contentHeight
-redSquare.x = xfirst
-redSquare.y = yfirst
-greenSquare.x = xfirst
-greenSquare.y = ysecond
-blueSquare.x = xsecond
-blueSquare.y = yfirst
-yellowSquare.x = xsecond
-yellowSquare.y = ysecond
+	redPanel.x = xfirst
+	redPanel.y = yfirst
+	greenPanel.x = xfirst
+	greenPanel.y = ysecond
+	bluePanel.x = xsecond
+	bluePanel.y = yfirst
+	yellowPanel.x = xsecond
+	yellowPanel.y = ysecond
 
-group:insert(wheel)
-group:insert(redSquare)
-group:insert(greenSquare)
-group:insert(blueSquare)
-group:insert(yellowSquare)
-group:insert(restartButton)
-group:insert(scoreText)
-group:insert(scoreDisplay)
-group:insert(roundDisplay)
+	group:insert(wheel)
+	group:insert(redPanel)
+	group:insert(bluePanel)
+	group:insert(yellowPanel)
+	group:insert(greenPanel)
+	group:insert(restartButton)
+	group:insert(scoreText)
+	group:insert(scoreDisplay)
+	group:insert(roundDisplay)
 
-panels = { redSquare, greenSquare, blueSquare, yellowSquare }
+	panels = { redPanel, bluePanel, yellowPanel, greenPanel }
 
-function addEventListeners( obj )
-	for i=1,#panels do
-		panels[i]:addEventListener('tap', updateGame)
+	function addEventListeners( obj )
+		for i=1,#panels do
+			panels[i]:addEventListener('tap', updateGame)
+		end
 	end
-end
 
-function removeEventListeners()
-	for i=1,#panels do
-		panels[i]:removeEventListener('tap', updateGame)
+	function removeEventListeners()
+		for i=1,#panels do
+			panels[i]:removeEventListener('tap', updateGame)
+		end
 	end
-end
 
------------------------------------------------------------------------------
+	-----------------------------------------------------------------------------
 
---	CREATE display objects and add them to 'group' here.
---	Example use-case: Restore 'group' from previously saved state.
+	--	CREATE display objects and add them to 'group' here.
+	--	Example use-case: Restore 'group' from previously saved state.
 
------------------------------------------------------------------------------
+	-----------------------------------------------------------------------------
 
 end
 
 
 -- Called immediately after scene has moved onscreen:
 function scene:enterScene( event )
---------------------------------------------------------------
+	--------------------------------------------------------------
 
---	INSERT code here (e.g. start timers, load audio, start listeners, etc.)
+	--	INSERT code here (e.g. start timers, load audio, start listeners, etc.)
 
------------------------------------------------------------------------------
+	-----------------------------------------------------------------------------
 
-local difficulty = event.params.difficulty
-
-local numPanels = #panels -- could just change to 4
-local isRight
-local alive = true
-local count = 0
-score = 0
-
-local function flashPanel()
-	if (count <= #sequence) then
-		transition.to (panels[sequence[count]], {time=700, alpha=0.4})
-		transition.to (panels[sequence[count]], {time=700, delay=700, alpha=1})
-		if count == #sequence then
-			timer.performWithDelay(1400, addEventListeners)
-		end
-		count = count + 1
-	end 
-end
-
-function playGame()
-	table.insert( sequence, math.random( numPanels ) )
-	count = 1
-	timer.performWithDelay( 1400, flashPanel, #sequence)
-end
-
-function gameOver()
-	local options =
-	{
-		effect = "fade",
-		time = 300,
-		params = {finalScore = score, finalRound = roundNumber, finalTime = math.floor((system.getTimer() - timeSinceStartedGame)/1000)}
-	}
-	storyboard.gotoScene( "gameover", options) -- change to gameover scene
-end
-
-function updateScore()
-	score = score + 100
-	scoreDisplay.text = score
-end
-
-local function updateRoundNumber()
-	roundNumber = roundNumber + 1
-	roundDisplay.text = "Round: " .. roundNumber
-end
-
-function updateGame( event )
-	local obj = event.target
-
-	if panels[sequence[currentPos]] == obj then
-		updateScore()
-		if currentPos == #sequence then
-			updateRoundNumber()
-		end
+	difficulty = event.params.difficulty
+	if difficulty == "easy" then
+		panelOnTime = 2000
+		timeBetweenPanelChange = 500
+	elseif difficulty == "medium" then
+		panelOnTime = 1500
+		timeBetweenPanelChange = 300
+		-- Hard and insane have the same time delay.
 	else
-		gameOver()
+		panelOnTime = 500
+		timeBetweenPanelChange = 50
+	end
+
+	local group = self.view
+	local difficulty = event.params.difficulty
+
+	local numPanels = #panels
+	local isRight
+	local alive = true
+	panelSequenceCount = 0
+	score = 0
+
+	function flashPanel()
+
+			panelNumber = sequence[panelSequenceCount]
+			panelSequenceCount = panelSequenceCount + 1
+
+			oldX = panels[panelNumber].x
+			oldY = panels[panelNumber].y
+			if panels[panelNumber] == redPanel then
+				group:remove(redPanel)
+				redPanel = display.newImage('res/red1_on.png')
+				redPanel.x = oldX
+				redPanel.y = oldY
+				redPanel:scale(scaleSize, scaleSize)
+				panels[panelNumber] = redPanel
+				group:insert(redPanel)
+			elseif panels[panelNumber] == bluePanel then
+				group:remove(bluePanel)
+				bluePanel = display.newImage('res/blue2_on.png')
+				bluePanel.x = oldX
+				bluePanel.y = oldY
+				bluePanel:scale(scaleSize, scaleSize)
+				panels[panelNumber] = bluePanel
+				group:insert(bluePanel)
+			elseif panels[panelNumber] == yellowPanel then
+				group:remove(yellowPanel)
+				yellowPanel = display.newImage('res/yellow3_on.png')
+				yellowPanel.x = oldX
+				yellowPanel.y = oldY
+				yellowPanel:scale(scaleSize, scaleSize)
+				panels[panelNumber] = yellowPanel
+				group:insert(yellowPanel)
+			elseif panels[panelNumber] == greenPanel then
+				group:remove(greenPanel)
+				greenPanel = display.newImage('res/green4_on.png')
+				greenPanel.x = oldX
+				greenPanel.y = oldY
+				greenPanel:scale(scaleSize, scaleSize)
+				panels[panelNumber] = greenPanel
+				group:insert(greenPanel)
+			end
+
+
+			function turnOffPanel()
+				if panels[panelNumber] == redPanel then
+					group:remove(redPanel)
+					redPanel = display.newImage('res/red1.png')
+					redPanel.x = oldX
+					redPanel.y = oldY
+					redPanel:scale(scaleSize, scaleSize)
+					panels[panelNumber] = redPanel
+					group:insert(redPanel)
+				elseif panels[panelNumber] == bluePanel then
+					group:remove(bluePanel)
+					bluePanel = display.newImage('res/blue2.png')
+					bluePanel.x = oldX
+					bluePanel.y = oldY
+					bluePanel:scale(scaleSize, scaleSize)
+					panels[panelNumber] = bluePanel
+					group:insert(bluePanel)
+				elseif panels[panelNumber] == yellowPanel then
+					group:remove(yellowPanel)
+					yellowPanel = display.newImage('res/yellow3.png')
+					yellowPanel.x = oldX
+					yellowPanel.y = oldY
+					yellowPanel:scale(scaleSize, scaleSize)
+					panels[panelNumber] = yellowPanel
+					group:insert(yellowPanel)
+				elseif panels[panelNumber] == greenPanel then
+					group:remove(greenPanel)
+					greenPanel = display.newImage('res/green4.png')
+					greenPanel.x = oldX
+					greenPanel.y = oldY
+					greenPanel:scale(scaleSize, scaleSize)
+					panels[panelNumber] = greenPanel
+					group:insert(greenPanel)
+				end
+
+				if panelSequenceCount - 1 == #sequence then
+					addEventListeners()
+				end
+
+			end
+
+			timer.performWithDelay(panelOnTime, turnOffPanel)
+	end
+
+	function playGame()
+		table.insert( sequence, math.random( numPanels ) )
+		if difficulty == "insane" then 
+			table.insert( sequence, math.random( numPanels ) )
+		end
+		panelSequenceCount = 1
+		timer.performWithDelay( panelOnTime * 2, flashPanel, #sequence)
+	end
+
+	function gameOver()
+		local options =
+		{
+			effect = "fade",
+			time = 300,
+			params = {finalScore = score, finalRound = roundNumber, finalTime = math.floor((system.getTimer() - timeSinceStartedGame)/1000)}
+		}
+		storyboard.gotoScene( "gameover", options) -- change to gameover scene
+	end
+
+	function updateScore()
+		score = score + 100
+		scoreDisplay.text = score
+	end
+
+	local function updateRoundNumber()
+		roundNumber = roundNumber + 1
+		roundDisplay.text = "Round: " .. roundNumber
+	end
+
+	function updateGame( event )
+		local obj = event.target
+
+		if panels[sequence[currentPos]] == obj then
+			updateScore()
+			if currentPos == #sequence then
+				updateRoundNumber()
+			end
+		else
+			gameOver()
+			return true
+		end
+
+		if currentPos == #sequence then
+			currentPos = 1
+			timer.performWithDelay(1, removeEventListeners) -- necessary, must have a delay for some reason
+			playGame()
+		else
+			currentPos = currentPos + 1
+		end
+
 		return true
 	end
 
-	if currentPos == #sequence then
-		currentPos = 1
-		timer.performWithDelay(1, removeEventListeners)
-		playGame()
-	else
-		currentPos = currentPos + 1
+	local function goBack( event )
+		local effects =
+		{
+			effect = "slideRight",
+			time = 750,
+		}
+		storyboard.gotoScene( "homescreen", effects )
+		-- storyboard.removeScene( "playscreen" )
 	end
 
-	return true
-end
-
-local function goBack( event )
-	local effects =
-	{
-	effect = "slideRight",
-	time = 750,
-}
-storyboard.gotoScene( "homescreen", effects )
--- storyboard.removeScene( "playscreen" )
-end
-
-restartButton:addEventListener('tap', goBack)
--- start game loop
-playGame()
+	restartButton:addEventListener('tap', goBack)
+	-- start game loop
+	playGame()
 
 end
 
@@ -282,22 +364,22 @@ end
 function scene:exitScene( event )
 	local group = self.view
 	storyboard.removeScene("playscreen")
--- display.remove(group)
------------------------------------------------------------------------------
---	INSERT code here (e.g. stop timers, remove listeners, unload sounds, etc.)
+	-- display.remove(group)
+	-----------------------------------------------------------------------------
+	--	INSERT code here (e.g. stop timers, remove listeners, unload sounds, etc.)
 
------------------------------------------------------------------------------
+	-----------------------------------------------------------------------------
 
 end
 
 -- Called prior to the removal of scene's "view" (display group)
 function scene:destroyScene( event )
 	local group = self.view
------------------------------------------------------------------------------
+	-----------------------------------------------------------------------------
 
---	INSERT code here (e.g. remove listeners, widgets, save state, etc.)
+	--	INSERT code here (e.g. remove listeners, widgets, save state, etc.)
 
------------------------------------------------------------------------------
+	-----------------------------------------------------------------------------
 
 end
 
