@@ -105,7 +105,7 @@ function scene:createScene( event )
 	scoreText.x = centerX
 	scoreText.y = 0.42 * display.contentHeight
 
-	scoreDisplay = display.newText( "999000", 0, 0, "Let's go Digital", 38 )
+	scoreDisplay = display.newText( "00", 0, 0, "Let's go Digital", 38 )
 	scoreDisplay:setTextColor(255, 255, 255) -- white
 	scoreDisplay.alpha = 1
 	scoreDisplay.x = centerX
@@ -209,7 +209,7 @@ function scene:enterScene( event )
 
 			panelNumber = sequence[panelSequenceCount]
 			panelSequenceCount = panelSequenceCount + 1
-
+			
 			oldX = panels[panelNumber].x
 			oldY = panels[panelNumber].y
 			if panels[panelNumber] == redPanel then
