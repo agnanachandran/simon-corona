@@ -186,10 +186,10 @@ function scene:enterScene( event )
 	difficulty = event.params.difficulty
 	if difficulty == "easy" then
 		panelOnTime = 2000
-		timeBetweenPanelChange = 500
+		timeBetweenPanelChange = 50
 	elseif difficulty == "medium" then
 		panelOnTime = 1500
-		timeBetweenPanelChange = 300
+		timeBetweenPanelChange = 50
 		-- Hard and insane have the same time delay.
 	else
 		panelOnTime = 500
@@ -205,14 +205,8 @@ function scene:enterScene( event )
 	panelSequenceCount = 0
 	score = 0
 
-	function flashPanel()
-
-			panelNumber = sequence[panelSequenceCount]
-			panelSequenceCount = panelSequenceCount + 1
-			
-			oldX = panels[panelNumber].x
-			oldY = panels[panelNumber].y
-			if panels[panelNumber] == redPanel then
+	function actuallyFlashPanel(panelNumber, oldX, oldY)
+		if panels[panelNumber] == redPanel then
 				group:remove(redPanel)
 				redPanel = display.newImage('res/red1_on.png')
 				redPanel.x = oldX
@@ -244,43 +238,57 @@ function scene:enterScene( event )
 				greenPanel:scale(scaleSize, scaleSize)
 				panels[panelNumber] = greenPanel
 				group:insert(greenPanel)
-			end
+		end
+	end
 
+	function actuallyTurnOffPanel(panelNumber, oldX, oldY)
+		if panels[panelNumber] == redPanel then
+			group:remove(redPanel)
+			redPanel = display.newImage('res/red1.png')
+			redPanel.x = oldX
+			redPanel.y = oldY
+			redPanel:scale(scaleSize, scaleSize)
+			panels[panelNumber] = redPanel
+			group:insert(redPanel)
+		elseif panels[panelNumber] == bluePanel then
+			group:remove(bluePanel)
+			bluePanel = display.newImage('res/blue2.png')
+			bluePanel.x = oldX
+			bluePanel.y = oldY
+			bluePanel:scale(scaleSize, scaleSize)
+			panels[panelNumber] = bluePanel
+			group:insert(bluePanel)
+		elseif panels[panelNumber] == yellowPanel then
+			group:remove(yellowPanel)
+			yellowPanel = display.newImage('res/yellow3.png')
+			yellowPanel.x = oldX
+			yellowPanel.y = oldY
+			yellowPanel:scale(scaleSize, scaleSize)
+			panels[panelNumber] = yellowPanel
+			group:insert(yellowPanel)
+		elseif panels[panelNumber] == greenPanel then
+			group:remove(greenPanel)
+			greenPanel = display.newImage('res/green4.png')
+			greenPanel.x = oldX
+			greenPanel.y = oldY
+			greenPanel:scale(scaleSize, scaleSize)
+			panels[panelNumber] = greenPanel
+			group:insert(greenPanel)
+		end
+	end
+	
+	function flashPanel()
+
+			panelNumber = sequence[panelSequenceCount]
+			panelSequenceCount = panelSequenceCount + 1
+			
+			oldX = panels[panelNumber].x -- x-coord of panel
+			oldY = panels[panelNumber].y -- y-coord of panel
+
+			actuallyFlashPanel(panelNumber, oldX, oldY)
 
 			function turnOffPanel()
-				if panels[panelNumber] == redPanel then
-					group:remove(redPanel)
-					redPanel = display.newImage('res/red1.png')
-					redPanel.x = oldX
-					redPanel.y = oldY
-					redPanel:scale(scaleSize, scaleSize)
-					panels[panelNumber] = redPanel
-					group:insert(redPanel)
-				elseif panels[panelNumber] == bluePanel then
-					group:remove(bluePanel)
-					bluePanel = display.newImage('res/blue2.png')
-					bluePanel.x = oldX
-					bluePanel.y = oldY
-					bluePanel:scale(scaleSize, scaleSize)
-					panels[panelNumber] = bluePanel
-					group:insert(bluePanel)
-				elseif panels[panelNumber] == yellowPanel then
-					group:remove(yellowPanel)
-					yellowPanel = display.newImage('res/yellow3.png')
-					yellowPanel.x = oldX
-					yellowPanel.y = oldY
-					yellowPanel:scale(scaleSize, scaleSize)
-					panels[panelNumber] = yellowPanel
-					group:insert(yellowPanel)
-				elseif panels[panelNumber] == greenPanel then
-					group:remove(greenPanel)
-					greenPanel = display.newImage('res/green4.png')
-					greenPanel.x = oldX
-					greenPanel.y = oldY
-					greenPanel:scale(scaleSize, scaleSize)
-					panels[panelNumber] = greenPanel
-					group:insert(greenPanel)
-				end
+				actuallyTurnOffPanel(panelNumber, oldX, oldY)			
 
 				if panelSequenceCount - 1 == #sequence then
 					addEventListeners()
@@ -297,6 +305,9 @@ function scene:enterScene( event )
 			table.insert( sequence, math.random( numPanels ) )
 		end
 		panelSequenceCount = 1
+
+		-- Start flash sequence immediately, then start with delayed panels
+		-- flashPanel()
 		timer.performWithDelay( panelOnTime * 2, flashPanel, #sequence)
 	end
 
@@ -322,20 +333,41 @@ function scene:enterScene( event )
 
 	function updateGame( event )
 		local obj = event.target
+		local function flashTappedPanel()
+			currentPanelNumber = 0
+			if panels[1] == obj then
+				currentPanelNumber = 1
+			elseif panels[2] == obj then
+				currentPanelNumber = 2
+			elseif panels[3] == obj then
+				currentPanelNumber = 3
+			else
+				currentPanelNumber = 4
+			end
+			oldX = panels[currentPanelNumber].x -- x-coord of panel
+			oldY = panels[currentPanelNumber].y -- y-coord of panel
+			actuallyFlashPanel(currentPanelNumber, oldX, oldY)
+			panels[currentPanelNumber]:addEventListener('tap', updateGame)
+			-- Lua closure necessary to pass in parameters to 'actuallyTurnOffPanel'
+			local turnOffPanelClosure = function() return actuallyTurnOffPanel (currentPanelNumber, oldX, oldY) end
+			timer.performWithDelay(100, turnOffPanelClosure)
+		end
 
 		if panels[sequence[currentPos]] == obj then
+			flashTappedPanel()
 			updateScore()
 			if currentPos == #sequence then
 				updateRoundNumber()
 			end
 		else
+			flashTappedPanel()
 			gameOver()
 			return true
 		end
 
 		if currentPos == #sequence then
 			currentPos = 1
-			timer.performWithDelay(1, removeEventListeners) -- necessary, must have a delay for some reason
+			timer.performWithDelay(1, removeEventListeners) -- necessary, must have a tiny delay for some unknown reason
 			playGame()
 		else
 			currentPos = currentPos + 1
@@ -351,7 +383,6 @@ function scene:enterScene( event )
 			time = 750,
 		}
 		storyboard.gotoScene( "homescreen", effects )
-		-- storyboard.removeScene( "playscreen" )
 	end
 
 	restartButton:addEventListener('tap', goBack)
