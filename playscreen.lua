@@ -8,6 +8,15 @@ local storyboard = require( "storyboard" )
 local widget = require( "widget" )
 local device = require( "device" )
 local scene = storyboard.newScene()
+json = require("json")
+lime = require("lime")
+
+-- lime HS setup
+
+lime.setup({
+	maxScores = 10,
+	levelKeyFrom = {"difficulty", "round", "score", "secondsPlayed"}
+})
 
 local font = {}
 font.normal = "Helvetica"
@@ -62,6 +71,7 @@ local xfirst = centerX - xSpace*display.contentWidth
 local xsecond = centerX + xSpace*display.contentWidth
 local yfirst = centerY - ySpace*display.contentHeight
 local ysecond = centerY + ySpace*display.contentHeight
+DEFAULT_ALPHA = 0.8
 ---------------------------------------------------------------------------------
 -- BEGINNING OF YOUR IMPLEMENTATION
 ---------------------------------------------------------------------------------
@@ -123,23 +133,23 @@ function scene:createScene( event )
 	restartButton:scale(scaleSize,scaleSize)
 
 	redPanel:scale(scaleSize,scaleSize)
-	greenPanel:scale(scaleSize,scaleSize)
 	bluePanel:scale(scaleSize,scaleSize)
 	yellowPanel:scale(scaleSize,scaleSize)
+	greenPanel:scale(scaleSize,scaleSize)
 
-	redPanel.alpha = 1
-	bluePanel.alpha = 1
-	greenPanel.alpha = 1
-	yellowPanel.alpha = 1
+	redPanel.alpha = DEFAULT_ALPHA
+	bluePanel.alpha = DEFAULT_ALPHA
+	yellowPanel.alpha = DEFAULT_ALPHA
+	greenPanel.alpha = DEFAULT_ALPHA
 
 	redPanel.x = xfirst
 	redPanel.y = yfirst
-	greenPanel.x = xfirst
-	greenPanel.y = ysecond
 	bluePanel.x = xsecond
 	bluePanel.y = yfirst
 	yellowPanel.x = xsecond
 	yellowPanel.y = ysecond
+	greenPanel.x = xfirst
+	greenPanel.y = ysecond
 
 	group:insert(wheel)
 	group:insert(redPanel)
@@ -153,7 +163,7 @@ function scene:createScene( event )
 
 	panels = { redPanel, bluePanel, yellowPanel, greenPanel }
 
-	function addEventListeners( obj )
+	function addEventListeners()
 		for i=1,#panels do
 			panels[i]:addEventListener('tap', updateGame)
 		end
@@ -241,12 +251,13 @@ function scene:enterScene( event )
 		end
 	end
 
-	function actuallyTurnOffPanel(panelNumber, oldX, oldY)
+	function actuallyTurnOffPanel(panelNumber, oldX, oldY, turnOnPanelListener)
 		if panels[panelNumber] == redPanel then
 			group:remove(redPanel)
 			redPanel = display.newImage('res/red1.png')
 			redPanel.x = oldX
 			redPanel.y = oldY
+			redPanel.alpha = DEFAULT_ALPHA
 			redPanel:scale(scaleSize, scaleSize)
 			panels[panelNumber] = redPanel
 			group:insert(redPanel)
@@ -255,6 +266,7 @@ function scene:enterScene( event )
 			bluePanel = display.newImage('res/blue2.png')
 			bluePanel.x = oldX
 			bluePanel.y = oldY
+			bluePanel.alpha = DEFAULT_ALPHA
 			bluePanel:scale(scaleSize, scaleSize)
 			panels[panelNumber] = bluePanel
 			group:insert(bluePanel)
@@ -263,6 +275,7 @@ function scene:enterScene( event )
 			yellowPanel = display.newImage('res/yellow3.png')
 			yellowPanel.x = oldX
 			yellowPanel.y = oldY
+			yellowPanel.alpha = DEFAULT_ALPHA
 			yellowPanel:scale(scaleSize, scaleSize)
 			panels[panelNumber] = yellowPanel
 			group:insert(yellowPanel)
@@ -271,10 +284,16 @@ function scene:enterScene( event )
 			greenPanel = display.newImage('res/green4.png')
 			greenPanel.x = oldX
 			greenPanel.y = oldY
+			greenPanel.alpha = DEFAULT_ALPHA
 			greenPanel:scale(scaleSize, scaleSize)
 			panels[panelNumber] = greenPanel
 			group:insert(greenPanel)
 		end
+
+		if turnOnPanelListener then
+			panels[panelNumber]:addEventListener('tap', updateGame)
+		end
+
 	end
 	
 	function flashPanel()
@@ -288,7 +307,8 @@ function scene:enterScene( event )
 			actuallyFlashPanel(panelNumber, oldX, oldY)
 
 			function turnOffPanel()
-				actuallyTurnOffPanel(panelNumber, oldX, oldY)			
+				doAddPanelListener = false
+				actuallyTurnOffPanel(panelNumber, oldX, oldY, doAddPanelListener)			
 
 				if panelSequenceCount - 1 == #sequence then
 					addEventListeners()
@@ -312,13 +332,31 @@ function scene:enterScene( event )
 	end
 
 	function gameOver()
+		lime_difficulty = difficulty
+		lime_round = roundNumber
+		lime_score = score
+		lime_secondsPlayed = math.floor((system.getTimer() - timeSinceStartedGame)/1000)
+
+		lime.add({
+			difficulty = lime_difficulty,
+			round = lime_round,
+			score = lime_score,
+			secondsPlayed = lime_secondsPlayed
+			})
+
+
+		lime.save()
+		local scores = lime.localScores({
+		    difficulty = "hard"
+		})
+		print(#scores)
 		local options =
 		{
 			effect = "fade",
 			time = 300,
-			params = {finalScore = score, finalRound = roundNumber, finalTime = math.floor((system.getTimer() - timeSinceStartedGame)/1000)}
+			params = {gameDifficulty = lime_difficulty, finalScore = lime_score, finalRound = lime_round, finalTime = lime_secondsPlayed}
 		}
-		storyboard.gotoScene( "gameover", options) -- change to gameover scene
+		storyboard.gotoScene("gameover", options) -- change to gameover scene
 	end
 
 	function updateScore()
@@ -347,9 +385,12 @@ function scene:enterScene( event )
 			oldX = panels[currentPanelNumber].x -- x-coord of panel
 			oldY = panels[currentPanelNumber].y -- y-coord of panel
 			actuallyFlashPanel(currentPanelNumber, oldX, oldY)
-			panels[currentPanelNumber]:addEventListener('tap', updateGame)
 			-- Lua closure necessary to pass in parameters to 'actuallyTurnOffPanel'
-			local turnOffPanelClosure = function() return actuallyTurnOffPanel (currentPanelNumber, oldX, oldY) end
+			
+			local turnOffPanelClosure = function()
+				panels[currentPanelNumber]:addEventListener('tap', updateGame)
+				return actuallyTurnOffPanel (currentPanelNumber, oldX, oldY, true)
+			end
 			timer.performWithDelay(100, turnOffPanelClosure)
 		end
 
