@@ -161,20 +161,6 @@ function scene:createScene( event )
 	group:insert(scoreDisplay)
 	group:insert(roundDisplay)
 
-	panels = { redPanel, bluePanel, yellowPanel, greenPanel }
-
-	function addEventListeners()
-		for i=1,#panels do
-			panels[i]:addEventListener('tap', updateGame)
-		end
-	end
-
-	function removeEventListeners()
-		for i=1,#panels do
-			panels[i]:removeEventListener('tap', updateGame)
-		end
-	end
-
 	-----------------------------------------------------------------------------
 
 	--	CREATE display objects and add them to 'group' here.
@@ -192,6 +178,21 @@ function scene:enterScene( event )
 	--	INSERT code here (e.g. start timers, load audio, start listeners, etc.)
 
 	-----------------------------------------------------------------------------
+	-- *** Possibly, but probably shouldn't, move to createScene instead (like it used to be)
+	panels = { redPanel, bluePanel, yellowPanel, greenPanel }
+
+	function addEventListeners()
+		for i=1,#panels do
+			panels[i]:addEventListener('tap', updateGame)
+		end
+	end
+
+	function removeEventListeners()
+		for i=1,#panels do
+			panels[i]:removeEventListener('tap', updateGame)
+		end
+	end
+
 
 	difficulty = event.params.difficulty
 	if difficulty == "easy" then
@@ -289,7 +290,6 @@ function scene:enterScene( event )
 			panels[panelNumber] = greenPanel
 			group:insert(greenPanel)
 		end
-
 		if turnOnPanelListener then
 			panels[panelNumber]:addEventListener('tap', updateGame)
 		end
@@ -321,7 +321,9 @@ function scene:enterScene( event )
 
 	function playGame()
 		table.insert( sequence, math.random( numPanels ) )
-		if difficulty == "insane" then 
+
+		-- insane mode = 2 panels added each round
+		if difficulty == "insane" then
 			table.insert( sequence, math.random( numPanels ) )
 		end
 		panelSequenceCount = 1
@@ -385,33 +387,39 @@ function scene:enterScene( event )
 			oldX = panels[currentPanelNumber].x -- x-coord of panel
 			oldY = panels[currentPanelNumber].y -- y-coord of panel
 			actuallyFlashPanel(currentPanelNumber, oldX, oldY)
-			-- Lua closure necessary to pass in parameters to 'actuallyTurnOffPanel'
 			
+			-- Lua closure necessary to pass in parameters to 'actuallyTurnOffPanel'
 			local turnOffPanelClosure = function()
-				panels[currentPanelNumber]:addEventListener('tap', updateGame)
-				return actuallyTurnOffPanel (currentPanelNumber, oldX, oldY, true)
+				if currentPos == #sequence then
+					actuallyTurnOffPanel (currentPanelNumber, oldX, oldY, false)
+				else
+					actuallyTurnOffPanel (currentPanelNumber, oldX, oldY, true)
+				end
+
+				-- If we're at the end of the sequence, reset currentPos to 1, and remove event listeners immediately
+				if currentPos == #sequence then
+					currentPos = 1
+					timer.performWithDelay(1, removeEventListeners) -- necessary, must have a tiny delay for some unknown reason
+					return playGame()
+				else
+					currentPos = currentPos + 1
+				end
 			end
 			timer.performWithDelay(100, turnOffPanelClosure)
 		end
 
+		-- If the panel tapped is the same as the one in the correct position, flash + turn off the panel and update the score/round numbers
 		if panels[sequence[currentPos]] == obj then
 			flashTappedPanel()
 			updateScore()
 			if currentPos == #sequence then
 				updateRoundNumber()
 			end
+		-- Otherwise, game over :(
 		else
 			flashTappedPanel()
 			gameOver()
 			return true
-		end
-
-		if currentPos == #sequence then
-			currentPos = 1
-			timer.performWithDelay(1, removeEventListeners) -- necessary, must have a tiny delay for some unknown reason
-			playGame()
-		else
-			currentPos = currentPos + 1
 		end
 
 		return true
@@ -435,7 +443,10 @@ end
 -- Called when scene is about to move offscreen:
 function scene:exitScene( event )
 	local group = self.view
+	removeEventListeners()
 	storyboard.removeScene("playscreen")
+	-- *** Solution to crashing bug: Reset all display objects? We need to stop the functions from running again.
+	-- *** OR, we can disable the restart button/make the back button do nothing while the flashing sequence is being 'played'
 	-- display.remove(group)
 	-----------------------------------------------------------------------------
 	--	INSERT code here (e.g. stop timers, remove listeners, unload sounds, etc.)
