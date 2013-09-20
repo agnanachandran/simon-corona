@@ -9,7 +9,7 @@ local widget = require( "widget" )
 local device = require( "device")
 local ads = require( "ads" )
 local scene = storyboard.newScene()
-
+local GGScore = require("GGScore")
 ----------------------------------------------------------------------------------
 -- 
 --	NOTE:
@@ -72,6 +72,7 @@ end
 -- Called when the scene's view does not exist:
 function scene:createScene( event )
 	local scaleSize = 0.2
+
 	restartButton = display.newImage('res/restart.png')
 	restartButton.alpha = 0
 	restartButton.x = 0.12*display.contentWidth
@@ -122,6 +123,56 @@ function scene:enterScene( event )
 	local group = self.view
 	params = event.params
 	local TRANSPARENT_TIME = 500
+	local board = GGScore:new( "best", true )
+	board:load()
+
+	local scores = board:getScores()
+
+local listOptions = 
+{
+    top = 0,
+    height = 480
+}
+
+local list = widget.newTableView( listOptions )
+
+-- onRender listener for the tableView
+local function onRowRender( event )
+
+    local row = event.target
+    local rowGroup = event.view
+
+    local number = display.newRetinaText( "#" .. event.index .. " - ", 12, 0, "Helvetica-Bold", 18 )
+    number:setReferencePoint( display.CenterLeftReferencePoint )
+    number.x = 15
+    number.y = row.height * 0.5
+    number:setTextColor( 0, 0, 0 )
+
+    local name = display.newRetinaText( scores[ event.index ].name, 12, 0, "Helvetica-Bold", 18 )
+    name:setReferencePoint( display.CenterLeftReferencePoint )
+    name.x = number.x + number.contentWidth
+    name.y = row.height * 0.5
+    name:setTextColor( 0, 0, 0 )
+
+    local score = display.newRetinaText( scores[ event.index ].value, 12, 0, "Helvetica-Bold", 18 )
+    score:setReferencePoint( display.CenterLeftReferencePoint )
+    score.x = display.contentWidth - score.contentWidth - 20
+    score.y = row.height * 0.5
+    score:setTextColor( 0, 0, 0 )
+
+    rowGroup:insert( number )
+    rowGroup:insert( name )
+    rowGroup:insert( score )
+
+end
+
+for i = 1, #scores, 1 do
+    list:insertRow
+    {
+        onRender = onRowRender,
+        height = 40
+    }
+end
 
 	scoreText.text = "Score: " .. params.finalScore
 	scoreText:setReferencePoint(display.CenterLeftReferencePoint)

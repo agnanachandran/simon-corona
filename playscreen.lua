@@ -7,16 +7,8 @@
 local storyboard = require( "storyboard" )
 local widget = require( "widget" )
 local device = require( "device" )
+local GGScore = require( "GGScore")
 local scene = storyboard.newScene()
-json = require("json")
-lime = require("lime")
-
--- lime HS setup
-
-lime.setup({
-	maxScores = 10,
-	levelKeyFrom = {"difficulty", "round", "score", "secondsPlayed"}
-})
 
 local font = {}
 font.normal = "Helvetica"
@@ -71,10 +63,17 @@ local xfirst = centerX - xSpace*display.contentWidth
 local xsecond = centerX + xSpace*display.contentWidth
 local yfirst = centerY - ySpace*display.contentHeight
 local ysecond = centerY + ySpace*display.contentHeight
+
+local board = GGScore:new( "best", true )
+board:setDefaultName("Bob Sr.")
+board:setDefaultScore(0)
+board:setMaxNameLength(13)
+board:setMaxScoreLength( 6 )
+
+-- constants
+SCORE_INCREMENT = 100
 DEFAULT_ALPHA = 0.8
----------------------------------------------------------------------------------
--- BEGINNING OF YOUR IMPLEMENTATION
----------------------------------------------------------------------------------
+FUCKING_TIMER_BULLSHIT = {}
 
 -- Called when the scene's view does not exist:
 function scene:createScene( event )
@@ -121,10 +120,6 @@ function scene:createScene( event )
 	scoreDisplay.x = centerX
 	scoreDisplay.y = 0.50*display.contentHeight
 
-	redPanel = display.newImage('res/red1.png')
-	bluePanel = display.newImage('res/blue2.png')
-	yellowPanel = display.newImage('res/yellow3.png')
-	greenPanel = display.newImage('res/green4.png')
 
 	restartButton = display.newImage('res/restart.png')	
 	restartButton.x = 0.1*display.contentWidth
@@ -132,24 +127,33 @@ function scene:createScene( event )
 
 	restartButton:scale(scaleSize,scaleSize)
 
-	redPanel:scale(scaleSize,scaleSize)
-	bluePanel:scale(scaleSize,scaleSize)
-	yellowPanel:scale(scaleSize,scaleSize)
-	greenPanel:scale(scaleSize,scaleSize)
+	function showDefaultPanels()
+		redPanel = display.newImage('res/red1.png')
+		bluePanel = display.newImage('res/blue2.png')
+		yellowPanel = display.newImage('res/yellow3.png')
+		greenPanel = display.newImage('res/green4.png')
 
-	redPanel.alpha = DEFAULT_ALPHA
-	bluePanel.alpha = DEFAULT_ALPHA
-	yellowPanel.alpha = DEFAULT_ALPHA
-	greenPanel.alpha = DEFAULT_ALPHA
+		redPanel:scale(scaleSize,scaleSize)
+		bluePanel:scale(scaleSize,scaleSize)
+		yellowPanel:scale(scaleSize,scaleSize)
+		greenPanel:scale(scaleSize,scaleSize)
 
-	redPanel.x = xfirst
-	redPanel.y = yfirst
-	bluePanel.x = xsecond
-	bluePanel.y = yfirst
-	yellowPanel.x = xsecond
-	yellowPanel.y = ysecond
-	greenPanel.x = xfirst
-	greenPanel.y = ysecond
+		redPanel.alpha = DEFAULT_ALPHA
+		bluePanel.alpha = DEFAULT_ALPHA
+		yellowPanel.alpha = DEFAULT_ALPHA
+		greenPanel.alpha = DEFAULT_ALPHA
+
+		redPanel.x = xfirst
+		redPanel.y = yfirst
+		bluePanel.x = xsecond
+		bluePanel.y = yfirst
+		yellowPanel.x = xsecond
+		yellowPanel.y = ysecond
+		greenPanel.x = xfirst
+		greenPanel.y = ysecond
+	end
+
+	showDefaultPanels()
 
 	group:insert(wheel)
 	group:insert(redPanel)
@@ -297,10 +301,8 @@ function scene:enterScene( event )
 	end
 	
 	function flashPanel()
-
 			panelNumber = sequence[panelSequenceCount]
 			panelSequenceCount = panelSequenceCount + 1
-			
 			oldX = panels[panelNumber].x -- x-coord of panel
 			oldY = panels[panelNumber].y -- y-coord of panel
 
@@ -316,7 +318,7 @@ function scene:enterScene( event )
 
 			end
 
-			timer.performWithDelay(panelOnTime, turnOffPanel)
+			FUCKING_TIMER_BULLSHIT[#FUCKING_TIMER_BULLSHIT + 1] = timer.performWithDelay(panelOnTime, turnOffPanel)
 	end
 
 	function playGame()
@@ -330,39 +332,25 @@ function scene:enterScene( event )
 
 		-- Start flash sequence immediately, then start with delayed panels
 		-- flashPanel()
-		timer.performWithDelay( panelOnTime * 2, flashPanel, #sequence)
+		FUCKING_TIMER_BULLSHIT[#FUCKING_TIMER_BULLSHIT + 1] = timer.performWithDelay( panelOnTime * 2, flashPanel, #sequence)
 	end
 
 	function gameOver()
-		lime_difficulty = difficulty
-		lime_round = roundNumber
-		lime_score = score
-		lime_secondsPlayed = math.floor((system.getTimer() - timeSinceStartedGame)/1000)
-
-		lime.add({
-			difficulty = lime_difficulty,
-			round = lime_round,
-			score = lime_score,
-			secondsPlayed = lime_secondsPlayed
-			})
-
-
-		lime.save()
-		local scores = lime.localScores({
-		    difficulty = "hard"
-		})
-		print(#scores)
+		secondsPlayed = math.floor((system.getTimer() - timeSinceStartedGame)/1000)
+		board:add( roundNumber .. " " .. difficulty .. " " .. secondsPlayed, score )
+		board:print()
+		board:save()
 		local options =
 		{
 			effect = "fade",
 			time = 300,
-			params = {gameDifficulty = lime_difficulty, finalScore = lime_score, finalRound = lime_round, finalTime = lime_secondsPlayed}
+			params = {gameDifficulty = difficulty, finalScore = score, finalRound = roundNumber, finalTime = secondsPlayed}
 		}
 		storyboard.gotoScene("gameover", options) -- change to gameover scene
 	end
 
 	function updateScore()
-		score = score + 100
+		score = score + SCORE_INCREMENT
 		scoreDisplay.text = score
 	end
 
@@ -399,13 +387,13 @@ function scene:enterScene( event )
 				-- If we're at the end of the sequence, reset currentPos to 1, and remove event listeners immediately
 				if currentPos == #sequence then
 					currentPos = 1
-					timer.performWithDelay(1, removeEventListeners) -- necessary, must have a tiny delay for some unknown reason
+					FUCKING_TIMER_BULLSHIT[#FUCKING_TIMER_BULLSHIT + 1] = timer.performWithDelay(1, removeEventListeners) -- necessary, must have a tiny delay for some unknown reason
 					return playGame()
 				else
 					currentPos = currentPos + 1
 				end
 			end
-			timer.performWithDelay(100, turnOffPanelClosure)
+			FUCKING_TIMER_BULLSHIT[#FUCKING_TIMER_BULLSHIT + 1] = timer.performWithDelay(100, turnOffPanelClosure)
 		end
 
 		-- If the panel tapped is the same as the one in the correct position, flash + turn off the panel and update the score/round numbers
@@ -444,10 +432,15 @@ end
 function scene:exitScene( event )
 	local group = self.view
 	removeEventListeners()
+
+	-- CANCEL ALL TIMERS
+	for i=1,#FUCKING_TIMER_BULLSHIT do
+		timer.cancel(FUCKING_TIMER_BULLSHIT[i])
+	end
+
 	storyboard.removeScene("playscreen")
 	-- *** Solution to crashing bug: Reset all display objects? We need to stop the functions from running again.
 	-- *** OR, we can disable the restart button/make the back button do nothing while the flashing sequence is being 'played'
-	-- display.remove(group)
 	-----------------------------------------------------------------------------
 	--	INSERT code here (e.g. stop timers, remove listeners, unload sounds, etc.)
 
@@ -458,6 +451,7 @@ end
 -- Called prior to the removal of scene's "view" (display group)
 function scene:destroyScene( event )
 	local group = self.view
+
 	-----------------------------------------------------------------------------
 
 	--	INSERT code here (e.g. remove listeners, widgets, save state, etc.)
