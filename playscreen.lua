@@ -73,7 +73,7 @@ board:setMaxScoreLength( 6 )
 -- constants
 SCORE_INCREMENT = 100
 DEFAULT_ALPHA = 0.8
-FUCKING_TIMER_BULLSHIT = {}
+LIST_OF_TIMERS = {}
 
 -- Called when the scene's view does not exist:
 function scene:createScene( event )
@@ -318,7 +318,7 @@ function scene:enterScene( event )
 
 			end
 
-			FUCKING_TIMER_BULLSHIT[#FUCKING_TIMER_BULLSHIT + 1] = timer.performWithDelay(panelOnTime, turnOffPanel)
+			LIST_OF_TIMERS[#LIST_OF_TIMERS + 1] = timer.performWithDelay(panelOnTime, turnOffPanel)
 	end
 
 	function playGame()
@@ -332,7 +332,7 @@ function scene:enterScene( event )
 
 		-- Start flash sequence immediately, then start with delayed panels
 		-- flashPanel()
-		FUCKING_TIMER_BULLSHIT[#FUCKING_TIMER_BULLSHIT + 1] = timer.performWithDelay( panelOnTime * 2, flashPanel, #sequence)
+		LIST_OF_TIMERS[#LIST_OF_TIMERS + 1] = timer.performWithDelay( panelOnTime * 2, flashPanel, #sequence)
 	end
 
 	function gameOver()
@@ -387,13 +387,13 @@ function scene:enterScene( event )
 				-- If we're at the end of the sequence, reset currentPos to 1, and remove event listeners immediately
 				if currentPos == #sequence then
 					currentPos = 1
-					FUCKING_TIMER_BULLSHIT[#FUCKING_TIMER_BULLSHIT + 1] = timer.performWithDelay(1, removeEventListeners) -- necessary, must have a tiny delay for some unknown reason
+					LIST_OF_TIMERS[#LIST_OF_TIMERS + 1] = timer.performWithDelay(1, removeEventListeners) -- necessary, must have a tiny delay for some unknown reason
 					return playGame()
 				else
 					currentPos = currentPos + 1
 				end
 			end
-			FUCKING_TIMER_BULLSHIT[#FUCKING_TIMER_BULLSHIT + 1] = timer.performWithDelay(100, turnOffPanelClosure)
+			LIST_OF_TIMERS[#LIST_OF_TIMERS + 1] = timer.performWithDelay(100, turnOffPanelClosure)
 		end
 
 		-- If the panel tapped is the same as the one in the correct position, flash + turn off the panel and update the score/round numbers
@@ -434,8 +434,8 @@ function scene:exitScene( event )
 	removeEventListeners()
 
 	-- CANCEL ALL TIMERS
-	for i=1,#FUCKING_TIMER_BULLSHIT do
-		timer.cancel(FUCKING_TIMER_BULLSHIT[i])
+	for i=1,#LIST_OF_TIMERS do
+		timer.cancel(LIST_OF_TIMERS[i])
 	end
 
 	storyboard.removeScene("playscreen")

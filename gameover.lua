@@ -126,7 +126,35 @@ function scene:enterScene( event )
 	local board = GGScore:new( "best", true )
 	board:load()
 
+	local widget = require( "widget" )
 	local scores = board:getScores()
+
+
+	scoreText.text = "Score: " .. params.finalScore
+	scoreText:setReferencePoint(display.CenterLeftReferencePoint)
+	scoreText.x = leftAlign
+	scoreText.y = 0.2 * display.contentHeight
+
+	roundText.text = "Round: " .. params.finalRound
+	roundText:setReferencePoint(display.CenterLeftReferencePoint)
+	roundText.x = leftAlign
+	roundText.y = 0.30 * display.contentHeight
+
+	timePlayedText.text = "Time played: " .. timeInMins( params.finalTime )
+	timePlayedText:setReferencePoint(display.CenterLeftReferencePoint)
+	timePlayedText.x = leftAlign
+	timePlayedText.y = 0.40 * display.contentHeight
+
+	gameoverTexts = {scoreText, roundText, timePlayedText}
+	for i=1, #gameoverTexts do
+		gameoverTexts[i].alpha = 0
+		gameoverTexts[i]:setTextColor(255, 255, 255)
+		transition.to( gameoverTexts[i], {time=TRANSPARENT_TIME, alpha=1} )
+	end
+
+	transition.to( borderbg, {time=TRANSPARENT_TIME, alpha=1})
+	transition.to( restartButton, {time=TRANSPARENT_TIME, alpha=1})
+	transition.to( gameoverTitle, {time=TRANSPARENT_TIME, alpha=1})
 
 local listOptions = 
 {
@@ -139,6 +167,7 @@ local list = widget.newTableView( listOptions )
 -- onRender listener for the tableView
 local function onRowRender( event )
 
+	print ('poop')
     local row = event.target
     local rowGroup = event.view
 
@@ -166,6 +195,7 @@ local function onRowRender( event )
 
 end
 
+print(#scores)
 for i = 1, #scores, 1 do
     list:insertRow
     {
@@ -174,32 +204,6 @@ for i = 1, #scores, 1 do
     }
 end
 
-	scoreText.text = "Score: " .. params.finalScore
-	scoreText:setReferencePoint(display.CenterLeftReferencePoint)
-	scoreText.x = leftAlign
-	scoreText.y = 0.2 * display.contentHeight
-
-	roundText.text = "Round: " .. params.finalRound
-	roundText:setReferencePoint(display.CenterLeftReferencePoint)
-	roundText.x = leftAlign
-	roundText.y = 0.30 * display.contentHeight
-
-	timePlayedText.text = "Time played: " .. timeInMins( params.finalTime )
-	timePlayedText:setReferencePoint(display.CenterLeftReferencePoint)
-	timePlayedText.x = leftAlign
-	timePlayedText.y = 0.40 * display.contentHeight
-
-	gameoverTexts = {scoreText, roundText, timePlayedText}
-
-	for i=1, #gameoverTexts do
-		gameoverTexts[i].alpha = 0
-		gameoverTexts[i]:setTextColor(255, 255, 255)
-		transition.to( gameoverTexts[i], {time=TRANSPARENT_TIME, alpha=1} )
-	end
-
-	transition.to( borderbg, {time=TRANSPARENT_TIME, alpha=1})
-	transition.to( restartButton, {time=TRANSPARENT_TIME, alpha=1})
-	transition.to( gameoverTitle, {time=TRANSPARENT_TIME, alpha=1})
 
 	group:insert(borderbg)
 	group:insert(restartButton)
