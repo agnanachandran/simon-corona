@@ -27,8 +27,8 @@ local showDifficulty
 local showInstructionsText
 local showSettingsText
 local showCreditsText
-local speakerButton
-local musicButton
+-- local speakerButton
+-- local musicButton
 
 local stdFontSize = 22
 -- Font defaults - Add to every file that uses fonts.
@@ -66,17 +66,17 @@ function scene:createScene( event )
     local group = self.view
 
     -- GLOBAL SPEAKER
-    speakerButton = display.newImage('res/speaker_on.png')
-    speakerButton:scale(0.08, 0.08)
-    speakerButton.x = 0.1*display.contentWidth
-    speakerButton.y = 0.92*display.contentHeight
+    -- speakerButton = display.newImage('res/speaker_on.png')
+    -- speakerButton:scale(0.08, 0.08)
+    -- speakerButton.x = 0.1*display.contentWidth
+    -- speakerButton.y = 0.92*display.contentHeight
 
-    musicButton = display.newImage('res/music_on.png')
-    musicButton:scale(0.1, 0.1)
-    musicButton.x = 0.9*display.contentWidth
-    musicButton.y = 0.92*display.contentHeight
-    group:insert(speakerButton)
-    group:insert(musicButton)
+    -- musicButton = display.newImage('res/music_on.png')
+    -- musicButton:scale(0.1, 0.1)
+    -- musicButton.x = 0.9*display.contentWidth
+    -- musicButton.y = 0.92*display.contentHeight
+    -- group:insert(speakerButton)
+    -- group:insert(musicButton)
     -- GLOBAL SPEAKER
     local scaleSize = 0.15
 
