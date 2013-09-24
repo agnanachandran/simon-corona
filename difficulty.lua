@@ -197,6 +197,7 @@ function scene:enterScene( event )
 	--	INSERT code here (e.g. start timers, load audio, start listeners, etc.)
 
 	-----------------------------------------------------------------------------
+	storyboard.returnTo = "homescreen"
 	function onEasyTapEnd()
 		local options = {
 			effect = "slideLeft",

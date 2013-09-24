@@ -121,6 +121,7 @@ end
 -- Called immediately after scene has moved onscreen:
 function scene:enterScene( event )
 	local group = self.view
+	storyboard.returnTo = "homescreen"	
 	params = event.params
 	local TRANSPARENT_TIME = 500
 	local board = GGScore:new( "best", true )

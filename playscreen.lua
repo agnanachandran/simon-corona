@@ -106,7 +106,7 @@ function scene:createScene( event )
 	roundDisplay:setTextColor(0, 0, 0) -- white
 	roundDisplay.alpha = 1
 	roundDisplay.x = 0.85*display.contentWidth
-	roundDisplay.y = 0.05*display.contentHeight
+	roundDisplay.y = 0.08*display.contentHeight
 
 	scoreText = display.newText( "Score:", 0, 0, "Let's go Digital", 25 )
 	scoreText:setTextColor(255, 255, 255) -- white
@@ -181,6 +181,7 @@ function scene:enterScene( event )
 	--	INSERT code here (e.g. start timers, load audio, start listeners, etc.)
 
 	-----------------------------------------------------------------------------
+	storyboard.returnTo = "homescreen"
 	-- *** Possibly, but probably shouldn't, move to createScene instead (like it used to be)
 	panels = { redPanel, bluePanel, yellowPanel, greenPanel }
 
